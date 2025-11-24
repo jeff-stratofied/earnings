@@ -574,7 +574,6 @@
       });
 
       // vertical dotted current-month marker
-      const barW = (w - padL - padR) / Math.max(1, data.length);
       const currentX = padL + (CURRENT_MONTH - 1) * barW;
       const vline = document.createElementNS(svgNS, "line");
       vline.setAttribute("x1", currentX);
