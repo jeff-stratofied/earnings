@@ -1249,100 +1249,164 @@
     // ======================
     // KPI CHART RENDERERS
     // ======================
-    function buildKpiChart(containerId, data){
+    const loanColors = ["#0ea5e9", "#22c55e", "#7c3aed", "#14b8a6", "#f59e0b", "#ef4444", "#6366f1", "#a855f7", "#f97316", "#06b6d4"];
+
+    function buildKpiStackedChart(containerId, data, valueGetter){
       const container = document.getElementById(containerId);
       if(!container) return;
       container.innerHTML = "";
 
       const svgNS = "http://www.w3.org/2000/svg";
-      const width = container.clientWidth || 720;
-      const height = container.clientHeight || 260;
-      const pad = { left:24, right:16, top:16, bottom:28 };
+      const rect = container.getBoundingClientRect();
+      const w = Math.max(360, rect.width || 700);
+      const h = 260;
+      const padL = 50, padR = 20, padT = 20, padB = 40;
 
       const maxMonths = Math.max(CURRENT_MONTH, ...data.map(l => l.earningsSchedule.length));
-      const series = Array.from({length:maxMonths}, (_,i)=>{
-        let total = 0;
-        data.forEach(l => {
-          const row = l.earningsSchedule[Math.min(i, l.earningsSchedule.length-1)];
-          if(row) total += row.netEarnings;
+      const months = Array.from({length:maxMonths}, (_,i) => {
+        const month = i+1;
+        const contributions = data.map(loan => {
+          const row = loan.earningsSchedule[Math.min(i, loan.earningsSchedule.length-1)];
+          const value = valueGetter(row || {}, month, loan);
+          return {
+            loanId: loan.id,
+            value,
+            color: loanColors[(loan.id - 1) % loanColors.length]
+          };
         });
-        return { month:i+1, total };
+        const posTotal = contributions.reduce((sum,c) => c.value > 0 ? sum + c.value : sum, 0);
+        const negTotal = contributions.reduce((sum,c) => c.value < 0 ? sum + c.value : sum, 0);
+        return { month, contributions, posTotal, negTotal };
       });
 
-      const maxVal = Math.max(...series.map(s=>s.total), 1);
-      const minVal = Math.min(...series.map(s=>s.total), 0);
-      const yRange = Math.max(maxVal - minVal, 1);
+      let maxAbs = 0;
+      months.forEach(m => {
+        maxAbs = Math.max(maxAbs, m.posTotal, Math.abs(m.negTotal));
+      });
+      if(maxAbs <= 0) maxAbs = 1;
+
+      const yZero = padT + (h - padT - padB) / 2;
+      const halfHeight = (h - padT - padB) / 2;
+      const scale = halfHeight / maxAbs;
+
+      const count = months.length;
+      const barW = (w - padL - padR) / Math.max(1, count);
 
       const svg = document.createElementNS(svgNS, "svg");
-      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
 
-      const path = document.createElementNS(svgNS, "path");
-      let d = "";
-      series.forEach((pt, idx) => {
-        const x = pad.left + (idx/(maxMonths-1 || 1)) * (width - pad.left - pad.right);
-        const y = pad.top + (1 - (pt.total - minVal) / yRange) * (height - pad.top - pad.bottom);
-        d += idx === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-      });
-      path.setAttribute("d", d);
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke", "url(#kpiGradient)");
-      path.setAttribute("stroke-width", "2.5");
+      for(let i=0;i<=4;i++){
+        const v = maxAbs * (1 - i/4);
+        const yUp = yZero - v*scale;
+        const yDn = yZero + v*scale;
 
-      const defs = document.createElementNS(svgNS,"defs");
-      const grad = document.createElementNS(svgNS,"linearGradient");
-      grad.setAttribute("id","kpiGradient");
-      grad.setAttribute("x1","0%");
-      grad.setAttribute("x2","100%");
-      grad.setAttribute("y1","0%");
-      grad.setAttribute("y2","0%");
-      const stop1 = document.createElementNS(svgNS,"stop");
-      stop1.setAttribute("offset","0%");
-      stop1.setAttribute("stop-color","#0ea5e9");
-      const stop2 = document.createElementNS(svgNS,"stop");
-      stop2.setAttribute("offset","100%");
-      stop2.setAttribute("stop-color","#7c3aed");
-      grad.appendChild(stop1);
-      grad.appendChild(stop2);
-      defs.appendChild(grad);
-      svg.appendChild(defs);
+        const upLine = document.createElementNS(svgNS,"line");
+        upLine.setAttribute("x1",padL);
+        upLine.setAttribute("x2",w-padR);
+        upLine.setAttribute("y1",yUp);
+        upLine.setAttribute("y2",yUp);
+        upLine.setAttribute("stroke","rgba(148,163,184,0.35)");
+        upLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(upLine);
+
+        const dnLine = document.createElementNS(svgNS,"line");
+        dnLine.setAttribute("x1",padL);
+        dnLine.setAttribute("x2",w-padR);
+        dnLine.setAttribute("y1",yDn);
+        dnLine.setAttribute("y2",yDn);
+        dnLine.setAttribute("stroke","rgba(148,163,184,0.12)");
+        dnLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(dnLine);
+
+        const lbl = document.createElementNS(svgNS,"text");
+        lbl.textContent = "$" + Math.round(v).toLocaleString();
+        lbl.setAttribute("x", padL - 10);
+        lbl.setAttribute("y", yUp + 4);
+        lbl.setAttribute("font-size","11");
+        lbl.setAttribute("fill","var(--text)");
+        lbl.setAttribute("text-anchor","end");
+        svg.appendChild(lbl);
+      }
 
       const axis = document.createElementNS(svgNS,"line");
-      axis.setAttribute("x1", pad.left);
-      axis.setAttribute("x2", width - pad.right);
-      axis.setAttribute("y1", height - pad.bottom);
-      axis.setAttribute("y2", height - pad.bottom);
-      axis.setAttribute("stroke", "var(--border)");
-      axis.setAttribute("stroke-width", "1");
+      axis.setAttribute("x1",padL);
+      axis.setAttribute("x2",w-padR);
+      axis.setAttribute("y1",yZero);
+      axis.setAttribute("y2",yZero);
+      axis.setAttribute("stroke","#94a3b8");
+      axis.setAttribute("stroke-width","1");
+      svg.appendChild(axis);
 
-      const currentX = pad.left + ((Math.min(CURRENT_MONTH, maxMonths)-1)/(maxMonths-1 || 1)) * (width - pad.left - pad.right);
+      months.forEach((m, idx) => {
+        const x = padL + idx*barW;
+        let yPos = yZero;
+        let yNeg = yZero;
+        const barWidth = Math.max(2, barW-4);
+
+        m.contributions.forEach(c => {
+          const hVal = Math.abs(c.value) * scale;
+          if(hVal <= 0) return;
+
+          const r = document.createElementNS(svgNS,"rect");
+          r.setAttribute("x", x+2);
+          r.setAttribute("width", barWidth);
+          r.setAttribute("fill", c.color);
+
+          if(c.value >= 0){
+            yPos -= hVal;
+            r.setAttribute("y", yPos);
+            r.setAttribute("height", hVal);
+          } else {
+            r.setAttribute("y", yNeg);
+            r.setAttribute("height", hVal);
+            yNeg += hVal;
+          }
+
+          svg.appendChild(r);
+        });
+
+        if((m.month % 12) === 0 || m.month === 1){
+          const lbl = document.createElementNS(svgNS,"text");
+          lbl.textContent = "M"+m.month;
+          lbl.setAttribute("x", x+barWidth/2);
+          lbl.setAttribute("y", h-padB+16);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","middle");
+          svg.appendChild(lbl);
+        }
+      });
+
+      const currentX = padL + (CURRENT_MONTH - 1) * barW;
       const vline = document.createElementNS(svgNS, "line");
       vline.setAttribute("x1", currentX);
       vline.setAttribute("x2", currentX);
-      vline.setAttribute("y1", pad.top);
-      vline.setAttribute("y2", height - pad.bottom);
+      vline.setAttribute("y1", 0);
+      vline.setAttribute("y2", h);
       vline.setAttribute("stroke", "#64748b");
       vline.setAttribute("stroke-dasharray", "4,3");
       vline.setAttribute("stroke-width", "1.5");
-
-      svg.appendChild(axis);
-      svg.appendChild(path);
       svg.appendChild(vline);
+
       container.appendChild(svg);
     }
 
     function renderKPI1Chart(data, containerId = "kpi1Chart"){
-      buildKpiChart(containerId, data);
+      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
     }
     function renderKPI2Chart(data, containerId = "kpi2Chart"){
-      buildKpiChart(containerId, data);
+      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
     }
     function renderKPI3Chart(data, containerId = "kpi3Chart"){
-      buildKpiChart(containerId, data);
+      buildKpiStackedChart(containerId, data, (row, month) => {
+        const net = row.netEarnings || 0;
+        return month > 0 ? net / month : 0;
+      });
     }
     function renderKPI4Chart(data, containerId = "kpi4Chart"){
-      buildKpiChart(containerId, data);
+      buildKpiStackedChart(containerId, data, row => -(row.cumFees || 0));
     }
 
     // ======================
