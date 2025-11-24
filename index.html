@@ -992,158 +992,78 @@
     `;
 
     // --------------------------
-    // KPI drawers
+    // KPI drawers (shared drawer)
     // --------------------------
-    const kpiDrawerRefs = {
-      netToDate:{
-        drawer:document.getElementById("kpiDrawer1"),
-        title:document.getElementById("kpi1Title"),
-        sub:document.getElementById("kpi1Sub"),
-        primaryTitle:document.getElementById("kpi1PrimaryTitle"),
-        primaryVal:document.getElementById("kpi1Primary"),
-        secondaryTitle:document.getElementById("kpi1SecondaryTitle"),
-        secondaryVal:document.getElementById("kpi1Secondary"),
-        chart:document.getElementById("kpi1Chart"),
-        table:document.getElementById("kpi1Table"),
-        chartRender:renderKPI1Chart,
-        tableRender:renderKPI1Table
-      },
-      projected:{
-        drawer:document.getElementById("kpiDrawer2"),
-        title:document.getElementById("kpi2Title"),
-        sub:document.getElementById("kpi2Sub"),
-        primaryTitle:document.getElementById("kpi2PrimaryTitle"),
-        primaryVal:document.getElementById("kpi2Primary"),
-        secondaryTitle:document.getElementById("kpi2SecondaryTitle"),
-        secondaryVal:document.getElementById("kpi2Secondary"),
-        chart:document.getElementById("kpi2Chart"),
-        table:document.getElementById("kpi2Table"),
-        chartRender:renderKPI2Chart,
-        tableRender:renderKPI2Table
-      },
-      avgMonthly:{
-        drawer:document.getElementById("kpiDrawer3"),
-        title:document.getElementById("kpi3Title"),
-        sub:document.getElementById("kpi3Sub"),
-        primaryTitle:document.getElementById("kpi3PrimaryTitle"),
-        primaryVal:document.getElementById("kpi3Primary"),
-        secondaryTitle:document.getElementById("kpi3SecondaryTitle"),
-        secondaryVal:document.getElementById("kpi3Secondary"),
-        chart:document.getElementById("kpi3Chart"),
-        table:document.getElementById("kpi3Table"),
-        chartRender:renderKPI3Chart,
-        tableRender:renderKPI3Table
-      },
-      fees:{
-        drawer:document.getElementById("kpiDrawer4"),
-        title:document.getElementById("kpi4Title"),
-        sub:document.getElementById("kpi4Sub"),
-        primaryTitle:document.getElementById("kpi4PrimaryTitle"),
-        primaryVal:document.getElementById("kpi4Primary"),
-        secondaryTitle:document.getElementById("kpi4SecondaryTitle"),
-        secondaryVal:document.getElementById("kpi4Secondary"),
-        chart:document.getElementById("kpi4Chart"),
-        table:document.getElementById("kpi4Table"),
-        chartRender:renderKPI4Chart,
-        tableRender:renderKPI4Table
-      }
-    };
-
-    function resetKpiDrawerContent(ref){
-      ref.chart.innerHTML = "";
-      ref.table.innerHTML = "";
+    function resetDrawerContent(){
+      drawerChartArea.innerHTML = "";
+      drawerExtra.innerHTML = "";
     }
 
-    function closeAllKpiDrawers(){
-      Object.values(kpiDrawerRefs).forEach(ref => {
-        ref.drawer.classList.remove("open");
-        ref.drawer.setAttribute("aria-hidden","true");
-      });
-    }
-
-    function openKpiDrawer(ref){
-      closeAllKpiDrawers();
-      ref.drawer.classList.add("open");
-      ref.drawer.setAttribute("aria-hidden","false");
-      ref.drawer.scrollTop = 0;
+    function openDrawerBase(){
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden","false");
+      drawer.scrollTop = 0;
     }
 
     function openKpi1(){
-      const ref = kpiDrawerRefs.netToDate;
-      ref.title.textContent = "Total Net Earnings to Date";
-      ref.sub.textContent = "Portfolio-level earnings across all loans.";
-      ref.primaryTitle.textContent = "Net Earnings to Date";
-      ref.primaryVal.textContent = `$${kpis.totalNetToDate.toFixed(2)}`;
-      ref.secondaryTitle.textContent = "Total Fees to Date";
-      ref.secondaryVal.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
-      resetKpiDrawerContent(ref);
-      ref.chartRender(loansWithEarnings);
-      ref.tableRender(loansWithEarnings);
-      openKpiDrawer(ref);
+      currentLoan = null;
+      drawerTitle.textContent = "Total Net Earnings to Date";
+      drawerSub.textContent = "Portfolio-level earnings across all loans.";
+      drawerPrimaryTitle.textContent = "Net Earnings to Date";
+      drawerPrimary.textContent = `$${kpis.totalNetToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Fees to Date";
+      drawerSecondary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      resetDrawerContent();
+      renderKPI1Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI1Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
     }
 
     function openKpi2(){
-      const ref = kpiDrawerRefs.projected;
-      ref.title.textContent = "Projected Lifetime Earnings";
-      ref.sub.textContent = "Net earnings at maturity for all loans.";
-      ref.primaryTitle.textContent = "Projected Lifetime Net";
-      ref.primaryVal.textContent = `$${kpis.totalNetProjected.toFixed(2)}`;
-      ref.secondaryTitle.textContent = "Total Principal";
-      ref.secondaryVal.textContent = `$${totalPrincipal.toLocaleString()}`;
-      resetKpiDrawerContent(ref);
-      ref.chartRender(loansWithEarnings);
-      ref.tableRender(loansWithEarnings);
-      openKpiDrawer(ref);
+      currentLoan = null;
+      drawerTitle.textContent = "Projected Lifetime Earnings";
+      drawerSub.textContent = "Net earnings at maturity for all loans.";
+      drawerPrimaryTitle.textContent = "Projected Lifetime Net";
+      drawerPrimary.textContent = `$${kpis.totalNetProjected.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Principal";
+      drawerSecondary.textContent = `$${totalPrincipal.toLocaleString()}`;
+      resetDrawerContent();
+      renderKPI2Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI2Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
     }
 
     function openKpi3(){
-      const ref = kpiDrawerRefs.avgMonthly;
-      ref.title.textContent = "Average Monthly Earnings";
-      ref.sub.textContent = `Based on net earnings through month ${CURRENT_MONTH}.`;
-      ref.primaryTitle.textContent = "Avg Monthly Earnings";
-      ref.primaryVal.textContent = `$${kpis.avgMonthlyEarnings.toFixed(2)}`;
-      ref.secondaryTitle.textContent = "Months Counted";
-      ref.secondaryVal.textContent = `${CURRENT_MONTH} months`;
-      resetKpiDrawerContent(ref);
-      ref.chartRender(loansWithEarnings);
-      ref.tableRender(loansWithEarnings);
-      openKpiDrawer(ref);
+      currentLoan = null;
+      drawerTitle.textContent = "Average Monthly Earnings";
+      drawerSub.textContent = `Based on net earnings through month ${CURRENT_MONTH}.`;
+      drawerPrimaryTitle.textContent = "Avg Monthly Earnings";
+      drawerPrimary.textContent = `$${kpis.avgMonthlyEarnings.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Months Counted";
+      drawerSecondary.textContent = `${CURRENT_MONTH} months`;
+      resetDrawerContent();
+      renderKPI3Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI3Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
     }
 
     function openKpi4(){
-      const ref = kpiDrawerRefs.fees;
-      ref.title.textContent = "Total Fees to Date";
-      ref.sub.textContent = "Cumulative monthly fees across all loans.";
-      ref.primaryTitle.textContent = "Total Fees";
-      ref.primaryVal.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
-      ref.secondaryTitle.textContent = "Total Loans";
-      ref.secondaryVal.textContent = `${loans.length}`;
-      resetKpiDrawerContent(ref);
-      ref.chartRender(loansWithEarnings);
-      ref.tableRender(loansWithEarnings);
-      openKpiDrawer(ref);
+      currentLoan = null;
+      drawerTitle.textContent = "Total Fees to Date";
+      drawerSub.textContent = "Cumulative monthly fees across all loans.";
+      drawerPrimaryTitle.textContent = "Total Fees";
+      drawerPrimary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Loans";
+      drawerSecondary.textContent = `${loans.length}`;
+      resetDrawerContent();
+      renderKPI4Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI4Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
     }
-
-    document.querySelectorAll("[data-kpi-close]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        closeAllKpiDrawers();
-      });
-    });
-
-    document.addEventListener("keydown", e => {
-      if(e.key === "Escape") closeAllKpiDrawers();
-    });
-
-    document.addEventListener("click", e => {
-      const openRef = Object.values(kpiDrawerRefs).find(ref => ref.drawer.classList.contains("open"));
-      if(openRef){
-        const inside = openRef.drawer.contains(e.target);
-        const tileClicked = e.target.closest(".kpi");
-        if(!inside && !tileClicked){
-          closeAllKpiDrawers();
-        }
-      }
-    });
 
     // --------------------------
     // Loan tiles
@@ -1214,7 +1134,8 @@
       if(drawer.classList.contains("open")){
         const inside = drawer.contains(e.target);
         const tileClicked = e.target.closest(".tile");
-        if(!inside && !tileClicked){
+        const kpiClicked = e.target.closest(".kpi");
+        if(!inside && !tileClicked && !kpiClicked){
           closeDrawer();
         }
       }
@@ -1228,6 +1149,7 @@
 
     function openLoanDrawer(loan){
       currentLoan = loan;
+      resetDrawerContent();
       const lastIdx = loan.earningsSchedule.length - 1;
       const atCurrent = loan.earningsSchedule[Math.min(CURRENT_MONTH-1, lastIdx)] || loan.earningsSchedule[lastIdx];
       const atEnd = loan.earningsSchedule[lastIdx];
@@ -1274,10 +1196,7 @@
           </table>
         </div>
       `;
-
-      drawer.classList.add("open");
-      drawer.setAttribute("aria-hidden","false");
-      drawer.scrollTop = 0;
+      openDrawerBase();
     }
 
     // --------------------------
@@ -1294,7 +1213,6 @@
       k.addEventListener("click", () => {
         const key = k.getAttribute("data-kpi");
         if(kpiOpeners[key]){
-          closeDrawer();
           kpiOpeners[key]();
         }
       });
@@ -1414,17 +1332,17 @@
       container.appendChild(svg);
     }
 
-    function renderKPI1Chart(data){
-      buildKpiChart("kpi1Chart", data);
+    function renderKPI1Chart(data, containerId = "kpi1Chart"){
+      buildKpiChart(containerId, data);
     }
-    function renderKPI2Chart(data){
-      buildKpiChart("kpi2Chart", data);
+    function renderKPI2Chart(data, containerId = "kpi2Chart"){
+      buildKpiChart(containerId, data);
     }
-    function renderKPI3Chart(data){
-      buildKpiChart("kpi3Chart", data);
+    function renderKPI3Chart(data, containerId = "kpi3Chart"){
+      buildKpiChart(containerId, data);
     }
-    function renderKPI4Chart(data){
-      buildKpiChart("kpi4Chart", data);
+    function renderKPI4Chart(data, containerId = "kpi4Chart"){
+      buildKpiChart(containerId, data);
     }
 
     // ======================
@@ -1443,7 +1361,7 @@
       `;
     }
 
-    function renderKPI1Table(data){
+    function renderKPI1Table(data, containerId = "kpi1Table"){
       const rows = data.map(l => {
         const lastIdx = l.earningsSchedule.length-1;
         const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
@@ -1455,9 +1373,9 @@
           `-$${atCur.cumFees.toFixed(2)}`
         ];
       });
-      renderKpiTable("kpi1Table", ["Loan","Net Earnings","Principal","Interest","Fees"], rows);
+      renderKpiTable(containerId, ["Loan","Net Earnings","Principal","Interest","Fees"], rows);
     }
-    function renderKPI2Table(data){
+    function renderKPI2Table(data, containerId = "kpi2Table"){
       const rows = data.map(l => {
         const lastRow = l.earningsSchedule[l.earningsSchedule.length-1];
         return [
@@ -1468,9 +1386,9 @@
           `${l.graceYears} yrs grace`
         ];
       });
-      renderKpiTable("kpi2Table", ["Loan","Projected Net","Principal","Term","Grace"], rows);
+      renderKpiTable(containerId, ["Loan","Projected Net","Principal","Term","Grace"], rows);
     }
-    function renderKPI3Table(data){
+    function renderKPI3Table(data, containerId = "kpi3Table"){
       const rows = data.map(l => {
         const lastIdx = l.earningsSchedule.length-1;
         const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
@@ -1483,9 +1401,9 @@
           `$${l.feePerMonth.toFixed(2)}/mo`
         ];
       });
-      renderKpiTable("kpi3Table", ["Loan","Avg / Mo","Net to Date","Months","Fees"], rows);
+      renderKpiTable(containerId, ["Loan","Avg / Mo","Net to Date","Months","Fees"], rows);
     }
-    function renderKPI4Table(data){
+    function renderKPI4Table(data, containerId = "kpi4Table"){
       const rows = data.map(l => {
         const lastIdx = l.earningsSchedule.length-1;
         const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
@@ -1497,13 +1415,10 @@
           `$${atCur.netEarnings.toFixed(2)}`
         ];
       });
-      renderKpiTable("kpi4Table", ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
+      renderKpiTable(containerId, ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
     }
 
-    // ======================
-    // KPI DRAWER OPEN / CLOSE HANDLERS
-    // ======================
-    // Logic replicated for KPI drawers; loan drawer behavior remains unchanged.
+    // Shared drawer behavior handled above for both KPI and loan content.
   </script>
 </body>
 </html>
