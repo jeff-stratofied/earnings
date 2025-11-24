@@ -511,6 +511,17 @@
       { id:10, purchaseDate:'2025-03-01', purchasePrice:8000,  termYears:3,  graceYears:0.00, nominalRate:0.0600, feePerMonth:3.00 }
     ];
 
+    let stackedBarGroupCounter = 0;
+
+    function prepareStackedBar(bar, groupId, index){
+      bar.setAttribute("data-stack-group", groupId);
+      bar.setAttribute("data-stack-index", index);
+      bar.style.transformOrigin = "center";
+      bar.style.transition = "transform 0.18s ease-out, opacity 0.18s";
+      bar.addEventListener("mousemove", magnifyBars);
+      bar.addEventListener("mouseleave", resetBars);
+    }
+
     // --------------------------
     // Amortization + earnings
     // --------------------------
@@ -649,6 +660,8 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","48");
 
+      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+
       // zero axis
       const axis = document.createElementNS(svgNS,"line");
       axis.setAttribute("x1",padL);
@@ -683,6 +696,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill", "#0ea5e9");
+        prepareStackedBar(rPrin, stackedGroupId, i);
 
         // interest (middle)
         const rInt = document.createElementNS(svgNS,"rect");
@@ -691,6 +705,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill", "#22c55e");
+        prepareStackedBar(rInt, stackedGroupId, i);
 
         // fees (negative, below axis)
         const rFee = document.createElementNS(svgNS,"rect");
@@ -699,6 +714,7 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill", "#ef4444");
+        prepareStackedBar(rFee, stackedGroupId, i);
 
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
@@ -758,6 +774,8 @@
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
+
+      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
 
       // grid lines / labels
       for(let i=0;i<=4;i++){
@@ -906,6 +924,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill","#0ea5e9");
+        prepareStackedBar(rPrin, stackedGroupId, i);
 
         const rInt = document.createElementNS(svgNS,"rect");
         rInt.setAttribute("x", x+2);
@@ -913,6 +932,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill","#22c55e");
+        prepareStackedBar(rInt, stackedGroupId, i);
 
         const rFee = document.createElementNS(svgNS,"rect");
         rFee.setAttribute("x", x+2);
@@ -920,6 +940,7 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill","#ef4444");
+        prepareStackedBar(rFee, stackedGroupId, i);
 
         // smooth hover tooltip
         [rPrin,rInt,rFee].forEach(el=>{
@@ -1297,6 +1318,8 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
 
+      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+
       for(let i=0;i<=4;i++){
         const v = maxAbs * (1 - i/4);
         const yUp = yZero - v*scale;
@@ -1442,6 +1465,7 @@
           r.setAttribute("x", x+2);
           r.setAttribute("width", barWidth);
           r.setAttribute("fill", c.color);
+          prepareStackedBar(r, stackedGroupId, idx);
 
           if(c.value >= 0){
             yPos -= hVal;
@@ -1596,6 +1620,45 @@
     }
 
     // Shared drawer behavior handled above for both KPI and loan content.
+
+    function magnifyBars(e){
+      const bar = e.currentTarget;
+      const groupId = bar && bar.getAttribute("data-stack-group");
+      if(!groupId) return;
+
+      const activeIdx = parseInt(bar.getAttribute("data-stack-index"), 10);
+      const bars = document.querySelectorAll(`rect[data-stack-group="${groupId}"]`);
+
+      bars.forEach(b => {
+        const idx = parseInt(b.getAttribute("data-stack-index"), 10);
+        const distance = (isNaN(activeIdx) || isNaN(idx)) ? Infinity : Math.abs(idx - activeIdx);
+        let scale = 1;
+        let opacity = 0.7;
+
+        if(distance === 0){
+          scale = 2.0;
+          opacity = 1.0;
+        } else if(distance === 1){
+          scale = 1.3;
+          opacity = 0.9;
+        }
+
+        b.style.transform = `scaleX(${scale})`;
+        b.style.opacity = `${opacity}`;
+      });
+    }
+
+    function resetBars(e){
+      const bar = e && e.currentTarget;
+      const groupId = bar && bar.getAttribute("data-stack-group");
+      if(!groupId) return;
+
+      const bars = document.querySelectorAll(`rect[data-stack-group="${groupId}"]`);
+      bars.forEach(b => {
+        b.style.transform = "scaleX(1)";
+        b.style.opacity = "1";
+      });
+    }
   </script>
 </body>
 </html>
