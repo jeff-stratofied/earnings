@@ -1251,7 +1251,7 @@
     // ======================
     const loanColors = ["#0ea5e9", "#22c55e", "#7c3aed", "#14b8a6", "#f59e0b", "#ef4444", "#6366f1", "#a855f7", "#f97316", "#06b6d4"];
 
-    function buildKpiStackedChart(containerId, data, valueGetter){
+    function buildKpiStackedChart(containerId, data, valueGetter, showCurrentLine = true){
       const container = document.getElementById(containerId);
       if(!container) return;
       container.innerHTML = "";
@@ -1486,22 +1486,28 @@
       // add hover group last so it is above bars
       svg.appendChild(hoverG);
 
-      const currentX = padL + (CURRENT_MONTH - 1) * barW;
-      const vline = document.createElementNS(svgNS, "line");
-      vline.setAttribute("x1", currentX);
-      vline.setAttribute("x2", currentX);
-      vline.setAttribute("y1", 0);
-      vline.setAttribute("y2", h);
-      vline.setAttribute("stroke", "#64748b");
-      vline.setAttribute("stroke-dasharray", "4,3");
-      vline.setAttribute("stroke-width", "1.5");
-      svg.appendChild(vline);
+      if(showCurrentLine){
+        const currentX = padL + (CURRENT_MONTH - 1) * barW;
+        const vline = document.createElementNS(svgNS, "line");
+        vline.setAttribute("x1", currentX);
+        vline.setAttribute("x2", currentX);
+        vline.setAttribute("y1", 0);
+        vline.setAttribute("y2", h);
+        vline.setAttribute("stroke", "#64748b");
+        vline.setAttribute("stroke-dasharray", "4,3");
+        vline.setAttribute("stroke-width", "1.5");
+        svg.appendChild(vline);
+      }
 
       container.appendChild(svg);
     }
 
     function renderKPI1Chart(data, containerId = "kpi1Chart"){
-      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
+      const limitedData = data.map(loan => ({
+        ...loan,
+        earningsSchedule: loan.earningsSchedule.slice(0, 18)
+      }));
+      buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false);
     }
     function renderKPI2Chart(data, containerId = "kpi2Chart"){
       buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
