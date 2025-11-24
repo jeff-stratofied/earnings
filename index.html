@@ -513,10 +513,10 @@
 
     let stackedBarGroupCounter = 0;
 
-    function prepareStackedBar(bar, groupId, index){
+    function prepareStackedBar(bar, groupId, index, isPositive = true){
       bar.setAttribute("data-stack-group", groupId);
       bar.setAttribute("data-stack-index", index);
-      bar.style.transformOrigin = "center";
+      bar.style.transformOrigin = isPositive ? "center bottom" : "center top";
       bar.style.transition = "transform 0.18s ease-out, opacity 0.18s";
       bar.addEventListener("mousemove", magnifyBars);
       bar.addEventListener("mouseleave", resetBars);
@@ -696,7 +696,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill", "#0ea5e9");
-        prepareStackedBar(rPrin, stackedGroupId, i);
+        prepareStackedBar(rPrin, stackedGroupId, i, true);
 
         // interest (middle)
         const rInt = document.createElementNS(svgNS,"rect");
@@ -705,7 +705,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill", "#22c55e");
-        prepareStackedBar(rInt, stackedGroupId, i);
+        prepareStackedBar(rInt, stackedGroupId, i, true);
 
         // fees (negative, below axis)
         const rFee = document.createElementNS(svgNS,"rect");
@@ -714,7 +714,7 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill", "#ef4444");
-        prepareStackedBar(rFee, stackedGroupId, i);
+        prepareStackedBar(rFee, stackedGroupId, i, false);
 
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
@@ -775,7 +775,7 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
 
-      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+      const chartId = containerEl.id || `drawer-${stackedBarGroupCounter++}`;
 
       // grid lines / labels
       for(let i=0;i<=4;i++){
@@ -902,6 +902,7 @@
       }
 
       data.forEach((d, i) => {
+        const stackedGroupId = `stack-${chartId}-${d.monthIndex || i}`;
         const x = padL + i*barW;
 
         const principal = d.cumPrincipal;
@@ -924,7 +925,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill","#0ea5e9");
-        prepareStackedBar(rPrin, stackedGroupId, i);
+        prepareStackedBar(rPrin, stackedGroupId, i, true);
 
         const rInt = document.createElementNS(svgNS,"rect");
         rInt.setAttribute("x", x+2);
@@ -932,7 +933,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill","#22c55e");
-        prepareStackedBar(rInt, stackedGroupId, i);
+        prepareStackedBar(rInt, stackedGroupId, i, true);
 
         const rFee = document.createElementNS(svgNS,"rect");
         rFee.setAttribute("x", x+2);
@@ -940,7 +941,7 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill","#ef4444");
-        prepareStackedBar(rFee, stackedGroupId, i);
+        prepareStackedBar(rFee, stackedGroupId, i, false);
 
         // smooth hover tooltip
         [rPrin,rInt,rFee].forEach(el=>{
@@ -1318,7 +1319,7 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
 
-      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+      const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
 
       for(let i=0;i<=4;i++){
         const v = maxAbs * (1 - i/4);
@@ -1451,6 +1452,7 @@
       }
 
       months.forEach((m, idx) => {
+        const stackedGroupId = `stack-${chartId}-${m.month}`;
         const x = padL + idx*barW;
         let yPos = yZero;
         let yNeg = yZero;
@@ -1465,7 +1467,7 @@
           r.setAttribute("x", x+2);
           r.setAttribute("width", barWidth);
           r.setAttribute("fill", c.color);
-          prepareStackedBar(r, stackedGroupId, idx);
+          prepareStackedBar(r, stackedGroupId, idx, c.value >= 0);
 
           if(c.value >= 0){
             yPos -= hVal;
