@@ -356,8 +356,6 @@
     </div>
   </aside>
 
-  <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
-
   <script>
     // --------------------------
     // Settings & base data
@@ -671,7 +669,6 @@
       axis.setAttribute("stroke-width","1");
       svg.appendChild(axis);
 
-      const tooltipEl = document.getElementById("tooltip");
       const hoverG = document.createElementNS(svgNS,"g");
 
       data.forEach((d, i) => {
