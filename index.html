@@ -559,7 +559,7 @@
       lensLayer.appendChild(lensOutline);
       svg.appendChild(lensLayer);
 
-      const scaleFactor = 2;
+      const zoom = 2.0;
 
       function move(x, y){
         lensLayer.style.display = "block";
@@ -567,7 +567,13 @@
         clipCircle.setAttribute("cy", y);
         lensOutline.setAttribute("cx", x);
         lensOutline.setAttribute("cy", y);
-        lensContent.setAttribute("transform", `translate(${radius - x*scaleFactor}, ${radius - y*scaleFactor})`);
+        const offsetX = -(x * (zoom - 1));
+        const offsetY = -(y * (zoom - 1));
+
+        lensContent.setAttribute(
+          "transform",
+          `translate(${offsetX}, ${offsetY}) scale(${zoom})`
+        );
       }
 
       function hide(){
