@@ -1709,22 +1709,40 @@
 
       let tooltipX = cx + dx;
       let tooltipY = cy + dy;
+      const minX = cx + 2;
+      const maxX = cx + radius - width - 2;
+      const maxY = cy - height - 2;
+      const circleLimit = radius - 3;
 
-      const limit = radius * 0.85;
-      const corners = [
-        {x: tooltipX, y: tooltipY},
-        {x: tooltipX + width, y: tooltipY},
-        {x: tooltipX, y: tooltipY + height},
-        {x: tooltipX + width, y: tooltipY + height}
-      ];
+      tooltipX = Math.min(Math.max(tooltipX, minX), maxX);
+      tooltipY = Math.min(tooltipY, maxY);
 
-      const maxDistance = Math.max(...corners.map(c => Math.hypot(c.x - cx, c.y - cy)));
-      if(maxDistance >= limit && maxDistance > 0){
-        const scale = limit / maxDistance;
-        dx *= scale;
-        dy *= scale;
-        tooltipX = cx + dx;
-        tooltipY = cy + dy;
+      for(let i = 0; i < 10; i++){
+        const corners = [
+          {x: tooltipX, y: tooltipY},
+          {x: tooltipX + width, y: tooltipY},
+          {x: tooltipX, y: tooltipY + height},
+          {x: tooltipX + width, y: tooltipY + height}
+        ];
+
+        let adjusted = false;
+
+        for(const corner of corners){
+          const distance = Math.hypot(corner.x - cx, corner.y - cy);
+          if(distance >= circleLimit){
+            const push = distance - circleLimit + 0.5;
+            const nx = (cx - corner.x) / distance;
+            const ny = (cy - corner.y) / distance;
+            tooltipX += nx * push;
+            tooltipY += ny * push;
+            adjusted = true;
+          }
+        }
+
+        tooltipX = Math.min(Math.max(tooltipX, minX), maxX);
+        tooltipY = Math.min(tooltipY, maxY);
+
+        if(!adjusted) break;
       }
 
       tooltip.group.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
