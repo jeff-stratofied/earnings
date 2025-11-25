@@ -571,12 +571,15 @@
       const zoom = 1.6;
 
       function move(e) {
-        const svgRect = svg.getBoundingClientRect();
-        const localX = e.clientX - svgRect.left;
-        const localY = e.clientY - svgRect.top;
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        const localX = svgPt.x;
+        const localY = svgPt.y;
 
-        const offsetX = -(localX * (zoom - 1)) + e.clientX - radius;
-        const offsetY = -(localY * (zoom - 1)) + e.clientY - radius;
+        const offsetX = -(localX * (zoom - 1)) + localX - radius;
+        const offsetY = -(localY * (zoom - 1)) + localY - radius;
 
         lensContent.setAttribute(
           "transform",
@@ -887,6 +890,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill", "#0ea5e9");
+        rPrin.__value = principal;
         prepareStackedBar(rPrin, stackedGroupId, 0, true);
 
         // interest (middle)
@@ -896,6 +900,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill", "#22c55e");
+        rInt.__value  = interest;
         prepareStackedBar(rInt, stackedGroupId, 1, true);
 
         // fees (negative, below axis)
@@ -905,6 +910,7 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill", "#ef4444");
+        rFee.__value  = negFees;
         prepareStackedBar(rFee, stackedGroupId, 2, false);
 
         svg.appendChild(rPrin);
