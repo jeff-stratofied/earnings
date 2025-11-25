@@ -581,21 +581,27 @@
 
       function move(mouseX, mouseY){
         updateLensContent(mouseX);
+
+        const rect = svg.getBoundingClientRect();
+
+        // Convert window → SVG coordinates
+        const svgPt = svg.createSVGPoint();
+        svgPt.x = mouseX;
+        svgPt.y = mouseY;
+        const pt = svgPt.matrixTransform(svg.getScreenCTM().inverse());
+
         lensLayer.style.display = "block";
-        const svgRect = svg.getBoundingClientRect();
-        const localX = mouseX - svgRect.left;
-        const localY = mouseY - svgRect.top;
 
-        clipCircle.setAttribute("cx", localX);
-        clipCircle.setAttribute("cy", localY);
-        lensOutline.setAttribute("cx", localX);
-        lensOutline.setAttribute("cy", localY);
-        const offsetX = -(localX * (zoom - 1)) + mouseX - radius;
-        const offsetY = -(localY * (zoom - 1)) + mouseY - radius;
+        // Move clip + outline
+        clipCircle.setAttribute("cx", pt.x);
+        clipCircle.setAttribute("cy", pt.y);
+        lensOutline.setAttribute("cx", pt.x);
+        lensOutline.setAttribute("cy", pt.y);
 
+        // Apply magnification
         lensContent.setAttribute(
           "transform",
-          `translate(${offsetX}, ${offsetY}) scale(${zoom})`
+          `translate(${pt.x - radius * zoom}, ${pt.y - radius * zoom}) scale(${zoom})`
         );
       }
 
