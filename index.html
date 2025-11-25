@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Loan Portfolio — Earnings</title>
+
+  <style>
+    :root {
+      --bg-light:#f8fafc;
+      --bg-dark:#0F172A;
+      --card-light:#ffffff;
+      --card-dark:#1E293B;
+      --border-light:rgba(15,23,42,0.07);
+      --border-dark:#334155;
+      --text-light:#0f172a;
+      --text-dark:#E2E8F0;
+      --accent:#0ea5e9;
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --border:rgba(15,23,42,0.07);
+      --text:#0f172a;
+      --muted:#64748b;
+      --brand:#0ea5e9;
+      --accent2:#7c3aed;
+      --surface:#f1f5f9;
+      --shadow:0 12px 30px rgba(15,23,42,0.06);
+      --kpi-hover:translateY(-6px);
+    }
+
+    html[data-theme="dark"] {
+      --bg:var(--bg-dark);
+      --card:var(--card-dark);
+      --border:var(--border-dark);
+      --text:var(--text-dark);
+      --muted:#9aa6b2;
+      --surface:#020617;
+    }
+
+    body {
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,var(--surface) 0%, var(--card) 100%);
+      background-color:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .app {
+      max-width:1200px;
+      margin:20px auto;
+      padding:16px;
+    }
+
+    header {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .header-top {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    h1 {
+      font-size:20px;
+      margin:0;
+    }
+    p.lead {
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .current-date {
+      font-size:13px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .actions { display:flex; gap:8px; align-items:center }
+    .btn{
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid rgba(15,23,42,0.06);
+      background:transparent;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn.primary{
+      background:linear-gradient(90deg,var(--brand),var(--accent2));
+      color:white;
+      border:none;
+      box-shadow:var(--shadow);
+    }
+    .close-btn{
+      background:#f1f5f9;
+      border:none;
+      padding:8px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin:14px 0 18px;
+    }
+    .kpi{
+      background:var(--card);
+      padding:14px;
+      border-radius:12px;
+      box-shadow:0 6px 18px rgba(16,24,40,0.04);
+      border:1px solid var(--border);
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .kpi h3{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .kpi p{
+      margin:8px 0 0;
+      font-size:18px;
+      font-weight:700;
+    }
+    .kpi:hover { transform:var(--kpi-hover); box-shadow:var(--shadow); }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      height:calc(100vh - 320px);
+      overflow:auto;
+      padding-right:6px;
+    }
+    @media(max-width:900px){
+      .grid{ grid-template-columns:1fr; height:auto; }
+      .kpis{ grid-template-columns:repeat(2,1fr); }
+    }
+
+    .tile{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      border-radius:12px;
+      background:var(--card);
+      min-height:110px;
+      cursor:pointer;
+      overflow:hidden;
+      transition:transform .18s ease, box-shadow .18s ease;
+      border:1px solid var(--border);
+    }
+    .tile:hover{ transform:var(--kpi-hover); box-shadow:var(--shadow); }
+    .tile-left{ flex:1; padding-right:10px; }
+    .loan-name{ font-weight:700; font-size:14px; }
+    .loan-sub{ font-size:12px; color:var(--muted); margin-top:6px; }
+    .loan-meta{ display:flex; gap:8px; font-size:12px; color:var(--muted); margin-top:8px; }
+
+    .chart-wrap{
+      width:170px;
+      flex-shrink:0;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+    }
+    .mini-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+      text-align:right;
+      width:100%;
+    }
+
+    /* Drawer */
+    .drawer{
+      position:fixed;
+      right:0;
+      top:0;
+      height:100vh;
+      max-width:1000px;
+      width:760px;
+      background:var(--card);
+      box-shadow:-28px 0 80px rgba(2,6,23,0.14);
+      transform:translateX(110%);
+      transition:transform .32s cubic-bezier(.2,.9,.3,1), opacity .24s ease;
+      z-index:120;
+      overflow:auto;
+      padding:20px;
+      opacity:0;
+    }
+    .drawer.open{
+      transform:translateX(0);
+      opacity:1;
+      animation:drawerIn .28s cubic-bezier(.2,.9,.3,1);
+    }
+    @keyframes drawerIn {
+      from { transform:translateX(30%); opacity:0; }
+      to   { transform:translateX(0);   opacity:1; }
+    }
+
+    .drawer-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .drawer-subtitle{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
+    .drawer-chart{
+      width:100%;
+      height:260px;
+      background:linear-gradient(180deg,var(--card),#fcfeff);
+      border-radius:8px;
+      border:1px solid rgba(15,23,42,0.03);
+      margin-bottom:8px;
+      padding:0;
+      position:relative;
+      display:block;
+    }
+
+    .drawer-info-row{
+      display:flex;
+      gap:12px;
+      margin-bottom:8px;
+      align-items:center;
+    }
+    .info-card{
+      flex:1;
+      background:var(--bg);
+      padding:12px;
+      border-radius:8px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-height:56px;
+    }
+    .info-card.small{ width:160px; align-items:flex-end; }
+    .muted-small{ font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .main-val{ font-weight:800; font-size:18px; }
+    .drawer-body{ display:flex; flex-direction:column; gap:12px; }
+    .drawer-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+    .drawer-actions .spacer{ flex:1; }
+
+    .amort-wrap{
+      border:1px solid rgba(15,23,42,0.06);
+      border-radius:8px;
+      padding:8px;
+      max-height:40vh;
+      overflow:auto;
+      background:var(--card);
+    }
+
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    thead th{
+      position:sticky;
+      top:0;
+      background:var(--card);
+      padding:8px;
+      text-align:left;
+      color:var(--muted);
+      font-weight:700;
+      border-bottom:1px solid rgba(15,23,42,0.06);
+    }
+    td{
+      padding:8px;
+      border-bottom:1px dashed rgba(15,23,42,0.06);
+      text-align:right;
+    }
+    td:first-child, th:first-child{ text-align:left; }
+
+    .tooltip{ position:fixed; z-index:999999;
+      position:fixed;
+      pointer-events:none;
+      background:#0f172a;
+      color:white;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:12px;
+      transform:translate(-50%,-120%);
+      box-shadow:0 6px 18px rgba(2,6,23,0.2);
+      display:none;
+      z-index:9999;
+      line-height:1.12;
+    }
+    .small{ font-size:12px; color:var(--muted); }
+
+    @media(max-width:760px){
+      .drawer{ width:100%; min-width:0; }
+    }
+
+    /* Theme toggle */
+    .theme-icon{
+      background:none;
+      border:none;
+      font-size:20px;
+      cursor:pointer;
+      transition:opacity .2s;
+    }
+    .theme-icon:hover{ opacity:0.7; }
+
+  </style>
+</head>
+<body>
+  <div class="app" role="main">
+    <header>
+      <div class="header-top">
+        <div>
+          <h1>Loan Portfolio — Earnings</h1>
+          <p class="lead">Cumulative principal, interest, and fees, with stacked earnings visuals.</p>
+          <div class="current-date">
+            Current Month Index: <strong id="currentMonthLabel">18</strong>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="font-size:13px; color:var(--muted)">
+            User: <strong style="color:var(--brand)">Jeff L Customer</strong>
+          </div>
+          <button id="themeToggle" class="theme-icon" title="Toggle dark mode">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="kpis" id="kpis"></section>
+    <section class="grid" id="loanGrid" aria-live="polite"></section>
+  </div>
+
+  <!-- Drawer -->
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="drawerTitle">Earnings Drawer</h2>
+        <div class="muted-small" id="drawerSub">details</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn" id="closeBtn" aria-label="Close drawer">✕</button>
+      </div>
+    </div>
+
+    <div class="drawer-info-row">
+      <div class="info-card" id="drawerPrimaryCard">
+        <div class="muted-small" id="drawerPrimaryTitle">Net Earnings</div>
+        <div id="drawerPrimary" class="main-val"></div>
+      </div>
+      <div class="info-card small" id="drawerSecondaryCard">
+        <div class="muted-small" id="drawerSecondaryTitle">Total Fees</div>
+        <div id="drawerSecondary" class="main-val small"></div>
+      </div>
+    </div>
+
+    <div id="drawerBody">
+      <div class="drawer-chart" id="drawerChartArea"></div>
+      <div id="drawerExtra"></div>
+    </div>
+  </aside>
+
+  <!-- KPI Drawers -->
+  <aside id="kpiDrawer1" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi1Title">KPI 1</h2>
+        <div id="kpi1Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer1" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi1PrimaryTitle"></div>
+        <div id="kpi1Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi1SecondaryTitle"></div>
+        <div id="kpi1Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi1Chart"></div>
+      <div class="amort-wrap" id="kpi1Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer1">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer2" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi2Title">KPI 2</h2>
+        <div id="kpi2Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer2" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi2PrimaryTitle"></div>
+        <div id="kpi2Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi2SecondaryTitle"></div>
+        <div id="kpi2Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi2Chart"></div>
+      <div class="amort-wrap" id="kpi2Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer2">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer3" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi3Title">KPI 3</h2>
+        <div id="kpi3Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer3" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi3PrimaryTitle"></div>
+        <div id="kpi3Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi3SecondaryTitle"></div>
+        <div id="kpi3Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi3Chart"></div>
+      <div class="amort-wrap" id="kpi3Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer3">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer4" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi4Title">KPI 4</h2>
+        <div id="kpi4Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer4" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi4PrimaryTitle"></div>
+        <div id="kpi4Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi4SecondaryTitle"></div>
+        <div id="kpi4Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi4Chart"></div>
+      <div class="amort-wrap" id="kpi4Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer4">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <script>
+    // --------------------------
+    // Settings & base data
+    // --------------------------
+    const CURRENT_MONTH = 18; // keep in sync with ROI page if you want
+    document.getElementById("currentMonthLabel").textContent = CURRENT_MONTH;
+
+    // Loan metadata: same as ROI, with feePerMonth added.
+    // TODO: Update feePerMonth values from Earnings.xlsx N1:T11 (col T).
+    const loans = [
+      { id:1,  purchaseDate:'2024-01-01', purchasePrice:7000,  termYears:10, graceYears:0.83, nominalRate:0.0883, feePerMonth:3.00 },
+      { id:2,  purchaseDate:'2024-02-01', purchasePrice:7500,  termYears:8,  graceYears:2.00, nominalRate:0.0750, feePerMonth:3.00 },
+      { id:3,  purchaseDate:'2024-03-01', purchasePrice:12000, termYears:12, graceYears:3.00, nominalRate:0.0825, feePerMonth:3.00 },
+      { id:4,  purchaseDate:'2024-04-01', purchasePrice:6000,  termYears:9,  graceYears:1.50, nominalRate:0.0950, feePerMonth:3.00 },
+      { id:5,  purchaseDate:'2024-07-01', purchasePrice:5000,  termYears:10, graceYears:1.00, nominalRate:0.0900, feePerMonth:3.00 },
+      { id:6,  purchaseDate:'2025-01-01', purchasePrice:7500,  termYears:5,  graceYears:0.00, nominalRate:0.0730, feePerMonth:3.00 },
+      { id:7,  purchaseDate:'2025-06-01', purchasePrice:10000, termYears:8,  graceYears:0.00, nominalRate:0.0900, feePerMonth:3.00 },
+      { id:8,  purchaseDate:'2025-10-01', purchasePrice:5000,  termYears:9,  graceYears:0.50, nominalRate:0.1100, feePerMonth:3.00 },
+      { id:9,  purchaseDate:'2025-02-01', purchasePrice:10000, termYears:7,  graceYears:0.25, nominalRate:0.1000, feePerMonth:3.00 },
+      { id:10, purchaseDate:'2025-03-01', purchasePrice:8000,  termYears:3,  graceYears:0.00, nominalRate:0.0600, feePerMonth:3.00 }
+    ];
+
+    let stackedBarGroupCounter = 0;
+
+    function prepareStackedBar(bar, groupId, index, isPositive = true){
+      bar.setAttribute("data-stack-group", groupId);
+      bar.setAttribute("data-stack-index", index);
+    }
+
+          }
+
+      const lensOutline = document.createElementNS(svgNS, "circle");
+      lensOutline.setAttribute("cx", "0");
+      lensOutline.setAttribute("cy", "0");
+      lensOutline.setAttribute("r", radius);
+      lensOutline.setAttribute("stroke", "rgba(14,165,233,0.8)");
+      lensOutline.setAttribute("stroke-width", "2.5");
+      lensOutline.setAttribute("fill", "rgba(255,255,255,0.12)");
+      lensOutline.setAttribute("filter", "drop-shadow(0 2px 6px rgba(15,23,42,0.25))");
+
+      lensLayer.appendChild(clipPath);
+      lensLayer.appendChild(lensContent);
+     
+      lensLayer.appendChild(lensOutline);
+      svg.appendChild(lensLayer);
+
+      const zoom = 3.0;
+
+      function move(mouseX, mouseY){
+        updateLensContent(mouseX);
+
+        const svgPt = svg.createSVGPoint();
+        svgPt.x = mouseX;
+        svgPt.y = mouseY;
+
+        const pt = svgPt.matrixTransform(svg.getScreenCTM().inverse());
+
+        lensLayer.style.display = "block";
+
+        // Move clip + outline
+        clipCircle.setAttribute("cx", pt.x);
+        clipCircle.setAttribute("cy", pt.y);
+        lensOutline.setAttribute("cx", pt.x);
+        lensOutline.setAttribute("cy", pt.y);
+
+        // Apply zoom at cursor point around the cursor location
+        lensContent.setAttribute(
+          "transform",
+          `translate(${pt.x}, ${pt.y}) scale(${zoom}) translate(${-pt.x}, ${-pt.y})`
+        );
+      }
+
+      function hide(){
+        lensLayer.style.display = "none";
+      }
+
+      return { move, hide, radius };
+    }
+
+    // --------------------------
+    // Amortization + earnings
+    // --------------------------
+    function calcAmort(principal, annualRate, termYears, graceYears){
+      const monthlyRate = annualRate / 12;
+      const totalMonths = Math.round(termYears * 12);
+      const graceMonths = Math.round(graceYears * 12);
+      const repayMonths = Math.max(1, totalMonths - graceMonths);
+      let balance = principal;
+      const schedule = [];
+
+      // grace period: interest only
+      for(let m=1; m<=graceMonths; m++){
+        const interest = +(balance * monthlyRate).toFixed(2);
+        balance = +(balance + interest).toFixed(2);
+        schedule.push({
+          monthIndex:m,
+          payment:0,
+          principalPaid:0,
+          interest,
+          balance
+        });
+      }
+
+      // repayment period
+      const payment = monthlyRate === 0
+        ? +(balance / repayMonths).toFixed(2)
+        : +((balance * monthlyRate) / (1 - Math.pow(1+monthlyRate, -repayMonths))).toFixed(2);
+
+      for(let m=1; m<=repayMonths; m++){
+        const interest = +(balance * monthlyRate).toFixed(2);
+        const principalPaid = +Math.min(balance, +(payment - interest).toFixed(2));
+        balance = +(Math.max(0, balance - principalPaid).toFixed(2));
+        schedule.push({
+          monthIndex: graceMonths + m,
+          payment:+payment.toFixed(2),
+          principalPaid,
+          interest,
+          balance
+        });
+      }
+      return { payment, schedule };
+    }
+
+    const loansWithEarnings = loans.map(l => {
+      const amort = calcAmort(l.purchasePrice, l.nominalRate, l.termYears, l.graceYears);
+      let cumP = 0, cumI = 0;
+      const earningsSchedule = amort.schedule.map(row => {
+        cumP = +(cumP + row.principalPaid).toFixed(2);
+        cumI = +(cumI + row.interest).toFixed(2);
+        const m = row.monthIndex;
+        const cumFees = +(l.feePerMonth * m).toFixed(2);  // cumulative flat monthly fees
+        const netEarnings = +(cumP + cumI - cumFees).toFixed(2);
+        return {
+          monthIndex:m,
+          payment:row.payment,
+          principalPaid:row.principalPaid,
+          interest:row.interest,
+          balance:row.balance,
+          cumPrincipal:cumP,
+          cumInterest:cumI,
+          cumFees:cumFees,
+          netEarnings:netEarnings
+        };
+      });
+      return { ...l, amort, earningsSchedule };
+    });
+
+    // --------------------------
+    // KPI calculations
+    // --------------------------
+    function computeEarningsKPIs(list){
+      let totalNetToDate = 0;
+      let totalNetProjected = 0;
+      let totalFeesToDate = 0;
+      let totalPrincipal = 0;
+
+      list.forEach(l => {
+        const lastIdx = l.earningsSchedule.length - 1;
+        const atCurrent = l.earningsSchedule[Math.min(CURRENT_MONTH-1, lastIdx)] || l.earningsSchedule[lastIdx];
+        const atEnd = l.earningsSchedule[lastIdx];
+
+        totalNetToDate += atCurrent.netEarnings;
+        totalFeesToDate += atCurrent.cumFees;
+        totalNetProjected += atEnd.netEarnings;
+        totalPrincipal += l.purchasePrice;
+      });
+
+      const avgMonthlyEarnings = CURRENT_MONTH > 0 ? totalNetToDate / CURRENT_MONTH : 0;
+
+      return {
+        totalNetToDate,
+        totalNetProjected,
+        totalFeesToDate,
+        avgMonthlyEarnings
+      };
+    }
+
+    const kpis = computeEarningsKPIs(loansWithEarnings);
+    const totalPrincipal = loans.reduce((s,l)=>s+l.purchasePrice,0);
+
+    // --------------------------
+    // Mini stacked earnings chart (per tile)
+    // --------------------------
+    
+    // --------------------------
+    // Mini stacked earnings chart (per tile)
+    // --------------------------
+    function createMiniStackedEarningsSVG(containerEl, earningsSchedule){
+      containerEl.innerHTML = "";
+      const svgNS = "http://www.w3.org/2000/svg";
+      const w = 170;
+      const h = 48;
+      const padL = 4, padR = 4, padT = 4, padB = 4;
+
+      const data = earningsSchedule; // full life of loan
+
+      // compute pos/neg ranges using negative fees
+      let maxAbs = 0;
+      data.forEach(d => {
+        const pos = d.cumPrincipal + d.cumInterest;
+        const neg = -d.cumFees; // negative
+        maxAbs = Math.max(maxAbs, pos, Math.abs(neg));
+      });
+      if(maxAbs <= 0) maxAbs = 1;
+
+      const yZero = h/2;
+      const halfHeight = (h - padT - padB) / 2;
+      const scale = halfHeight / maxAbs;
+
+      const count = data.length;
+      const barW = (w - padL - padR) / Math.max(1, count);
+
+      const svg = document.createElementNS(svgNS,"svg");
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("width","100%");
+      svg.setAttribute("height","48");
+      svg.dataset.padL = padL;
+      svg.dataset.barW = barW;
+
+      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+      const bars = [];
+
+      // zero axis
+      const axis = document.createElementNS(svgNS,"line");
+      axis.setAttribute("x1",padL);
+      axis.setAttribute("x2",w-padR);
+      axis.setAttribute("y1",yZero);
+      axis.setAttribute("y2",yZero);
+      axis.setAttribute("stroke","#cbd5e1");
+      axis.setAttribute("stroke-width","0.8");
+      svg.appendChild(axis);
+
+      data.forEach((d, i) => {
+        const x = padL + i*barW;
+
+        const principal = d.cumPrincipal;
+        const interest = d.cumInterest;
+        const negFees = -d.cumFees;
+
+        const hPrin = principal * scale;
+        const hInt  = interest  * scale;
+        const hFees = Math.abs(negFees) * scale;
+
+        const yInt  = yZero - hInt;
+        const yPrin = yZero - hInt - hPrin;
+        const yFee  = yZero;
+
+        const barWidth = Math.max(1, barW-2);
+
+        // principal (top)
+        const rPrin = document.createElementNS(svgNS,"rect");
+        rPrin.setAttribute("x", x+1);
+        rPrin.setAttribute("y", yPrin);
+        rPrin.setAttribute("width", barWidth);
+        rPrin.setAttribute("height", hPrin);
+        rPrin.setAttribute("fill", "#0ea5e9");
+        rPrin.__value = principal;
+        prepareStackedBar(rPrin, stackedGroupId, 0, true);
+
+        // interest (middle)
+        const rInt = document.createElementNS(svgNS,"rect");
+        rInt.setAttribute("x", x+1);
+        rInt.setAttribute("y", yInt);
+        rInt.setAttribute("width", barWidth);
+        rInt.setAttribute("height", hInt);
+        rInt.setAttribute("fill", "#22c55e");
+        rInt.__value  = interest;
+        prepareStackedBar(rInt, stackedGroupId, 1, true);
+
+        // fees (negative, below axis)
+        const rFee = document.createElementNS(svgNS,"rect");
+        rFee.setAttribute("x", x+1);
+        rFee.setAttribute("y", yFee);
+        rFee.setAttribute("width", barWidth);
+        rFee.setAttribute("height", hFees);
+        rFee.setAttribute("fill", "#ef4444");
+        rFee.__value  = negFees;
+        prepareStackedBar(rFee, stackedGroupId, 2, false);
+
+        svg.appendChild(rPrin);
+        svg.appendChild(rInt);
+        svg.appendChild(rFee);
+
+        bars.push(rPrin, rInt, rFee);
+      });
+
+      const lens = createHoverLens(svg, bars, 32);
+
+        const hovered = data[monthIdx];
+        const tipXRight = cx + lens.radius + 12;
+        const tipXLeft = cx - lens.radius - 12;
+        const tooltipX = tipXRight + 140 > w ? tipXLeft : tipXRight;
+        const tooltipY = Math.max(padT + 12, cy - lens.radius * 0.6);
+
+        showHover(tooltipX, tooltipY, hovered);
+      }
+
+      const months = Array.from({length:maxMonths}, (_,i) => {
+        const month = i+1;
+        const contributions = data.map(loan => {
+          const row = loan.earningsSchedule[Math.min(i, loan.earningsSchedule.length-1)];
+          const value = valueGetter(row || {}, month, loan);
+          return {
+            loanId: loan.id,
+            value,
+            color: loanColors[(loan.id - 1) % loanColors.length]
+          };
+        });
+        const posTotal = contributions.reduce((sum,c) => c.value > 0 ? sum + c.value : sum, 0);
+        const negTotal = contributions.reduce((sum,c) => c.value < 0 ? sum + c.value : sum, 0);
+        return { month, contributions, posTotal, negTotal };
+      });
+
+      let maxValue = 0;
+      let minValue = 0;
+      months.forEach(m => {
+        maxValue = Math.max(maxValue, m.posTotal);
+        minValue = Math.min(minValue, m.negTotal);
+      });
+
+      const yMax = Math.max(maxValue, 1);
+      // Allow exactly two grid steps below zero
+      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
+
+      const count = months.length;
+      const barW = (w - padL - padR) / Math.max(1, count);
+
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("width","100%");
+      svg.setAttribute("height","100%");
+      svg.dataset.padL = padL;
+      svg.dataset.barW = barW;
+
+      const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
+
+      const gridBelowZero = 2;   // Always two gridlines below zero
+      const gridAboveZero = 4;   // Keep existing 4–5 above-zero lines
+
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
+
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
+
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / gridAboveZero) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
+      }
+
+      const axis = document.createElementNS(svgNS,"line");
+      axis.setAttribute("x1",padL);
+      axis.setAttribute("x2",w-padR);
+      axis.setAttribute("y1",yZero);
+      axis.setAttribute("y2",yZero);
+      axis.setAttribute("stroke","#94a3b8");
+      axis.setAttribute("stroke-width","1");
+      svg.appendChild(axis);
+
+      
+      if(showCurrentLine){
+        const currentX = padL + (CURRENT_MONTH - 1) * barW;
+        const vline = document.createElementNS(svgNS, "line");
+        vline.setAttribute("x1", currentX);
+        vline.setAttribute("x2", currentX);
+        vline.setAttribute("y1", 0);
+        vline.setAttribute("y2", h);
+        vline.setAttribute("stroke", "#64748b");
+        vline.setAttribute("stroke-dasharray", "4,3");
+        vline.setAttribute("stroke-width", "1.5");
+        svg.appendChild(vline);
+      }
+
+      function findContributionAtPoint(month, cy){
+        const valueAtY = (yZero - cy) / scale;
+        const positives = month.contributions.filter(c => c.value > 0);
+        const negatives = month.contributions.filter(c => c.value < 0);
+        const pool = valueAtY >= 0 ? positives : negatives;
+
+        let cumulative = 0;
+        for(const c of pool){
+          const next = cumulative + c.value;
+          if(valueAtY >= Math.min(cumulative, next) && valueAtY <= Math.max(cumulative, next)){
+            return c;
+          }
+          cumulative = next;
+        }
+        return null;
+      }
+
+      function handleMouseMove(ev){
+        const rectSvg = svg.getBoundingClientRect();
+        const cx = ev.clientX - rectSvg.left;
+        const cy = ev.clientY - rectSvg.top;
+
+        if(cx < padL || cx > w - padR || cy < padT || cy > h - padB){
+          lens.hide();
+          hideHover();
+          return;
+        }
+
+        lens.move(ev.clientX, ev.clientY);
+
+        const monthIdx = Math.max(0, Math.min(months.length - 1, Math.floor((cx - padL) / barW)));
+        const month = months[monthIdx];
+        const contribution = findContributionAtPoint(month, cy);
+
+        if(!contribution){
+          hideHover();
+          return;
+        }
+
+        const tipXRight = cx + lens.radius + 12;
+        const tipXLeft = cx - lens.radius - 12;
+        const tooltipX = tipXRight + 140 > w ? tipXLeft : tipXRight;
+        const tooltipY = Math.max(padT + 12, cy - lens.radius * 0.6);
+
+        showHover(tooltipX, tooltipY, {
+          loanLabel: `Loan ${contribution.loanId}`,
+          month: month.month,
+          value: contribution.value,
+          total: month.posTotal + month.negTotal
+        });
+      }
+
+      buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false);
+    }
+    function renderKPI2Chart(data, containerId = "kpi2Chart"){
+      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
+    }
+    function renderKPI3Chart(data, containerId = "kpi3Chart"){
+      buildKpiStackedChart(containerId, data, (row, month) => {
+        const net = row.netEarnings || 0;
+        return month > 0 ? net / month : 0;
+      });
+    }
+    function renderKPI4Chart(data, containerId = "kpi4Chart"){
+      buildKpiStackedChart(containerId, data, row => -(row.cumFees || 0));
+    }
+
+    // ======================
+    // KPI TABLE RENDERERS
+    // ======================
+    function renderKpiTable(containerId, headers, rows){
+      const container = document.getElementById(containerId);
+      if(!container) return;
+      const headHtml = headers.map(h=>`<th>${h}</th>`).join("");
+      const bodyHtml = rows.map(r=>`<tr>${r.map(cell=>`<td>${cell}</td>`).join("")}</tr>`).join("");
+      container.innerHTML = `
+        <table>
+          <thead><tr>${headHtml}</tr></thead>
+          <tbody>${bodyHtml}</tbody>
+        </table>
+      `;
+    }
+
+    function renderKPI1Table(data, containerId = "kpi1Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        return [
+          `Loan ${l.id}`,
+          `$${atCur.netEarnings.toFixed(2)}`,
+          `$${atCur.cumPrincipal.toFixed(2)}`,
+          `$${atCur.cumInterest.toFixed(2)}`,
+          `-$${atCur.cumFees.toFixed(2)}`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Net Earnings","Principal","Interest","Fees"], rows);
+    }
+    function renderKPI2Table(data, containerId = "kpi2Table"){
+      const rows = data.map(l => {
+        const lastRow = l.earningsSchedule[l.earningsSchedule.length-1];
+        return [
+          `Loan ${l.id}`,
+          `$${lastRow.netEarnings.toFixed(2)}`,
+          `$${l.purchasePrice.toFixed(2)}`,
+          `${l.termYears} yrs`,
+          `${l.graceYears} yrs grace`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Projected Net","Principal","Term","Grace"], rows);
+    }
+    function renderKPI3Table(data, containerId = "kpi3Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        const avg = CURRENT_MONTH > 0 ? atCur.netEarnings / CURRENT_MONTH : 0;
+        return [
+          `Loan ${l.id}`,
+          `$${avg.toFixed(2)}`,
+          `$${atCur.netEarnings.toFixed(2)}`,
+          `${CURRENT_MONTH}`,
+          `$${l.feePerMonth.toFixed(2)}/mo`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Avg / Mo","Net to Date","Months","Fees"], rows);
+    }
+    function renderKPI4Table(data, containerId = "kpi4Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        return [
+          `Loan ${l.id}`,
+          l.purchaseDate,
+          `$${l.feePerMonth.toFixed(2)}/mo`,
+          `-$${atCur.cumFees.toFixed(2)}`,
+          `$${atCur.netEarnings.toFixed(2)}`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
+    }
+
+    // Shared drawer behavior handled above for both KPI and loan content.
+  </script>
+</body>
+</html>
