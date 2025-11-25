@@ -539,10 +539,25 @@
       lensContent.setAttribute("class", "lens-content");
       lensContent.setAttribute("clip-path", `url(#${clipId})`);
 
-      bars.forEach(bar => {
-        const clone = bar.cloneNode(true);
-        lensContent.appendChild(clone);
-      });
+      function updateLensContent(mouseX){
+        lensContent.innerHTML = "";
+
+        const padL = parseFloat(svg.dataset.padL || 0);
+        const barW = parseFloat(svg.dataset.barW || 1);
+
+        const rect = svg.getBoundingClientRect();
+        const localX = (mouseX - rect.left);
+        const barIndex = Math.floor((localX - padL) / barW);
+
+        const windowSize = 4;   // magnify only the 4 bars to the left and right
+        const start = Math.max(0, barIndex - windowSize);
+        const end   = Math.min(bars.length - 1, barIndex + windowSize);
+
+        for (let i = start; i <= end; i++) {
+          const clone = bars[i].cloneNode(true);
+          lensContent.appendChild(clone);
+        }
+      }
 
       const lensOutline = document.createElementNS(svgNS, "circle");
       lensOutline.setAttribute("cx", "0");
@@ -561,6 +576,7 @@
       const zoom = 3.0;
 
       function move(mouseX, mouseY){
+        updateLensContent(mouseX);
         lensLayer.style.display = "block";
         const svgRect = svg.getBoundingClientRect();
         const localX = mouseX - svgRect.left;
@@ -723,6 +739,8 @@
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","48");
+      svg.dataset.padL = padL;
+      svg.dataset.barW = barW;
 
       const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
       const bars = [];
@@ -870,6 +888,8 @@
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
+      svg.dataset.padL = padL;
+      svg.dataset.barW = barW;
 
       const chartId = containerEl.id || `drawer-${stackedBarGroupCounter++}`;
 
@@ -1440,6 +1460,8 @@
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
+      svg.dataset.padL = padL;
+      svg.dataset.barW = barW;
 
       const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
 
