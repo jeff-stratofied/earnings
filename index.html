@@ -574,6 +574,11 @@
 
       lensLayer.appendChild(clipPath);
       lensLayer.appendChild(lensContent);
+      // --- Clone all bars into the lensContent group ---
+      bars.forEach(bar => {
+        const clone = bar.cloneNode(true);
+        lensContent.appendChild(clone);
+      });
       lensLayer.appendChild(lensOutline);
       svg.appendChild(lensLayer);
 
@@ -582,12 +587,10 @@
       function move(mouseX, mouseY){
         updateLensContent(mouseX);
 
-        const rect = svg.getBoundingClientRect();
-
-        // Convert window → SVG coordinates
         const svgPt = svg.createSVGPoint();
         svgPt.x = mouseX;
         svgPt.y = mouseY;
+
         const pt = svgPt.matrixTransform(svg.getScreenCTM().inverse());
 
         lensLayer.style.display = "block";
@@ -598,7 +601,7 @@
         lensOutline.setAttribute("cx", pt.x);
         lensOutline.setAttribute("cy", pt.y);
 
-        // Apply magnification
+        // Apply zoom at cursor point
         lensContent.setAttribute(
           "transform",
           `translate(${pt.x - radius * zoom}, ${pt.y - radius * zoom}) scale(${zoom})`
