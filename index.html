@@ -540,21 +540,25 @@
       lensContent.setAttribute("clip-path", `url(#${clipId})`);
 
       function updateLensContent(mouseX){
-        lensContent.innerHTML = "";
+        lensContent.innerHTML = ""; // clear old clones
 
         const padL = parseFloat(svg.dataset.padL || 0);
         const barW = parseFloat(svg.dataset.barW || 1);
 
+        // Determine the hovered bar index
         const rect = svg.getBoundingClientRect();
-        const localX = (mouseX - rect.left);
+        const localX = mouseX - rect.left;
         const barIndex = Math.floor((localX - padL) / barW);
 
-        const windowSize = 4;   // magnify only the 4 bars to the left and right
+        // Limit magnification to a small window of bars
+        const windowSize = 2;   // center +/- 2 bars = 5 bars total
         const start = Math.max(0, barIndex - windowSize);
         const end   = Math.min(bars.length - 1, barIndex + windowSize);
 
+        // Clone only bars inside this window
         for (let i = start; i <= end; i++) {
           const clone = bars[i].cloneNode(true);
+          clone.removeAttribute("transform");
           lensContent.appendChild(clone);
         }
       }
@@ -586,8 +590,8 @@
         clipCircle.setAttribute("cy", localY);
         lensOutline.setAttribute("cx", localX);
         lensOutline.setAttribute("cy", localY);
-        const offsetX = -(localX * (zoom - 1));
-        const offsetY = -(localY * (zoom - 1));
+        const offsetX = -(localX * (zoom - 1)) + mouseX - radius;
+        const offsetY = -(localY * (zoom - 1)) + mouseY - radius;
 
         lensContent.setAttribute(
           "transform",
