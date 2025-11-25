@@ -952,7 +952,7 @@
       const rect = containerEl.getBoundingClientRect();
       const w = Math.max(360, rect.width || 700);
       const h = 260;
-      const padL = 50, padR = 20, padT = 20, padB = 10;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
 
       const data = earningsSchedule;
 
@@ -966,8 +966,9 @@
         minValue = Math.min(minValue, neg);
       });
 
-      const yMin = minValue < -5 ? minValue : 0;
       const yMax = Math.max(maxValue, 1);
+      // Allow exactly two grid steps below zero
+      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
       const yRange = yMax - yMin || 1;
       const usableHeight = h - padT - padB;
       const scale = usableHeight / yRange;
@@ -984,11 +985,11 @@
       const chartId = containerEl.id || `drawer-${stackedBarGroupCounter++}`;
 
       // grid lines / labels
-      const gridBelowZero = yMin < 0 ? 1 : 0;
-      const totalGridLines = 4;
+      const gridBelowZero = 2;   // Always two gridlines below zero
+      const gridAboveZero = 4;   // Keep existing 4–5 above-zero lines
 
-      for(let gy = -gridBelowZero; gy <= totalGridLines; gy++){
-        const y = yZero - gy * ((yZero - padT) / totalGridLines);
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
 
         const gridLine = document.createElementNS(svgNS,"line");
         gridLine.setAttribute("x1",padL);
@@ -1001,7 +1002,7 @@
 
         if(gy > 0){
           const lbl = document.createElementNS(svgNS,"text");
-          const value = (yMax / totalGridLines) * gy;
+          const value = (yMax / gridAboveZero) * gy;
           lbl.textContent = "$" + Math.round(value).toLocaleString();
           lbl.setAttribute("x", padL - 10);
           lbl.setAttribute("y", y + 4);
@@ -1509,7 +1510,7 @@
       const rect = container.getBoundingClientRect();
       const w = Math.max(360, rect.width || 700);
       const h = 260;
-      const padL = 50, padR = 20, padT = 20, padB = 10;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
 
       const maxMonths = Math.max(CURRENT_MONTH, ...data.map(l => l.earningsSchedule.length));
       const months = Array.from({length:maxMonths}, (_,i) => {
@@ -1535,8 +1536,9 @@
         minValue = Math.min(minValue, m.negTotal);
       });
 
-      const yMin = minValue < -5 ? minValue : 0;
       const yMax = Math.max(maxValue, 1);
+      // Allow exactly two grid steps below zero
+      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
       const yRange = yMax - yMin || 1;
       const usableHeight = h - padT - padB;
       const scale = usableHeight / yRange;
@@ -1552,11 +1554,11 @@
 
       const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
 
-      const gridBelowZero = yMin < 0 ? 1 : 0;
-      const totalGridLines = 4;
+      const gridBelowZero = 2;   // Always two gridlines below zero
+      const gridAboveZero = 4;   // Keep existing 4–5 above-zero lines
 
-      for(let gy = -gridBelowZero; gy <= totalGridLines; gy++){
-        const y = yZero - gy * ((yZero - padT) / totalGridLines);
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
 
         const gridLine = document.createElementNS(svgNS,"line");
         gridLine.setAttribute("x1",padL);
@@ -1569,7 +1571,7 @@
 
         if(gy > 0){
           const lbl = document.createElementNS(svgNS,"text");
-          const value = (yMax / totalGridLines) * gy;
+          const value = (yMax / gridAboveZero) * gy;
           lbl.textContent = "$" + Math.round(value).toLocaleString();
           lbl.setAttribute("x", padL - 10);
           lbl.setAttribute("y", y + 4);
