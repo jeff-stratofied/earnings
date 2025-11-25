@@ -532,7 +532,7 @@
       bar.setAttribute("data-stack-index", index);
     }
 
-    function createSmallHoverLens(svg, bars, radius = 18) {
+    function createSmallHoverLens(svg, bars, radius = 12) {
       const svgNS = "http://www.w3.org/2000/svg";
 
       const globalSVG = document.getElementById("globalLensSVG");
@@ -568,7 +568,7 @@
         lensContent.appendChild(clone);
       });
 
-      const zoom = .6;
+      const zoom = .4;
 
       function move(e) {
         const pt = svg.createSVGPoint();
