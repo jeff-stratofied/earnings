@@ -889,22 +889,26 @@
       const rect = containerEl.getBoundingClientRect();
       const w = Math.max(360, rect.width || 700);
       const h = 260;
-      const padL = 50, padR = 20, padT = 20, padB = 40;
+      const padL = 50, padR = 20, padT = 20, padB = 10;
 
       const data = earningsSchedule;
 
       // find extrema using negative fees
-      let maxAbs = 0;
+      let maxValue = 0;
+      let minValue = 0;
       data.forEach(d => {
         const pos = d.cumPrincipal + d.cumInterest;
         const neg = -d.cumFees;
-        maxAbs = Math.max(maxAbs, pos, Math.abs(neg));
+        maxValue = Math.max(maxValue, pos);
+        minValue = Math.min(minValue, neg);
       });
-      if(maxAbs <= 0) maxAbs = 1;
 
-      const yZero = padT + (h - padT - padB) / 2;
-      const halfHeight = (h - padT - padB) / 2;
-      const scale = halfHeight / maxAbs;
+      const yMin = minValue < -5 ? minValue : 0;
+      const yMax = Math.max(maxValue, 1);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
 
       const count = data.length;
       const barW = (w - padL - padR) / Math.max(1, count);
@@ -917,37 +921,32 @@
       const chartId = containerEl.id || `drawer-${stackedBarGroupCounter++}`;
 
       // grid lines / labels
-      for(let i=0;i<=4;i++){
-        const v = maxAbs * (1 - i/4);
-        const yUp = yZero - v*scale;
-        const yDn = yZero + v*scale;
+      const gridBelowZero = yMin < 0 ? 1 : 0;
+      const totalGridLines = 4;
 
-        const upLine = document.createElementNS(svgNS,"line");
-        upLine.setAttribute("x1",padL);
-        upLine.setAttribute("x2",w-padR);
-        upLine.setAttribute("y1",yUp);
-        upLine.setAttribute("y2",yUp);
-        upLine.setAttribute("stroke","rgba(148,163,184,0.35)");
-        upLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(upLine);
+      for(let gy = -gridBelowZero; gy <= totalGridLines; gy++){
+        const y = yZero - gy * ((yZero - padT) / totalGridLines);
 
-        const dnLine = document.createElementNS(svgNS,"line");
-        dnLine.setAttribute("x1",padL);
-        dnLine.setAttribute("x2",w-padR);
-        dnLine.setAttribute("y1",yDn);
-        dnLine.setAttribute("y2",yDn);
-        dnLine.setAttribute("stroke","rgba(148,163,184,0.12)");
-        dnLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(dnLine);
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
 
-        const lbl = document.createElementNS(svgNS,"text");
-        lbl.textContent = "$" + Math.round(v).toLocaleString();
-        lbl.setAttribute("x", padL - 10);
-        lbl.setAttribute("y", yUp + 4);
-        lbl.setAttribute("font-size","11");
-        lbl.setAttribute("fill","var(--text)");
-        lbl.setAttribute("text-anchor","end");
-        svg.appendChild(lbl);
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / totalGridLines) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
       }
 
       // zero axis
@@ -1447,7 +1446,7 @@
       const rect = container.getBoundingClientRect();
       const w = Math.max(360, rect.width || 700);
       const h = 260;
-      const padL = 50, padR = 20, padT = 20, padB = 40;
+      const padL = 50, padR = 20, padT = 20, padB = 10;
 
       const maxMonths = Math.max(CURRENT_MONTH, ...data.map(l => l.earningsSchedule.length));
       const months = Array.from({length:maxMonths}, (_,i) => {
@@ -1466,15 +1465,19 @@
         return { month, contributions, posTotal, negTotal };
       });
 
-      let maxAbs = 0;
+      let maxValue = 0;
+      let minValue = 0;
       months.forEach(m => {
-        maxAbs = Math.max(maxAbs, m.posTotal, Math.abs(m.negTotal));
+        maxValue = Math.max(maxValue, m.posTotal);
+        minValue = Math.min(minValue, m.negTotal);
       });
-      if(maxAbs <= 0) maxAbs = 1;
 
-      const yZero = padT + (h - padT - padB) / 2;
-      const halfHeight = (h - padT - padB) / 2;
-      const scale = halfHeight / maxAbs;
+      const yMin = minValue < -5 ? minValue : 0;
+      const yMax = Math.max(maxValue, 1);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
 
       const count = months.length;
       const barW = (w - padL - padR) / Math.max(1, count);
@@ -1486,37 +1489,32 @@
 
       const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
 
-      for(let i=0;i<=4;i++){
-        const v = maxAbs * (1 - i/4);
-        const yUp = yZero - v*scale;
-        const yDn = yZero + v*scale;
+      const gridBelowZero = yMin < 0 ? 1 : 0;
+      const totalGridLines = 4;
 
-        const upLine = document.createElementNS(svgNS,"line");
-        upLine.setAttribute("x1",padL);
-        upLine.setAttribute("x2",w-padR);
-        upLine.setAttribute("y1",yUp);
-        upLine.setAttribute("y2",yUp);
-        upLine.setAttribute("stroke","rgba(148,163,184,0.35)");
-        upLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(upLine);
+      for(let gy = -gridBelowZero; gy <= totalGridLines; gy++){
+        const y = yZero - gy * ((yZero - padT) / totalGridLines);
 
-        const dnLine = document.createElementNS(svgNS,"line");
-        dnLine.setAttribute("x1",padL);
-        dnLine.setAttribute("x2",w-padR);
-        dnLine.setAttribute("y1",yDn);
-        dnLine.setAttribute("y2",yDn);
-        dnLine.setAttribute("stroke","rgba(148,163,184,0.12)");
-        dnLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(dnLine);
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
 
-        const lbl = document.createElementNS(svgNS,"text");
-        lbl.textContent = "$" + Math.round(v).toLocaleString();
-        lbl.setAttribute("x", padL - 10);
-        lbl.setAttribute("y", yUp + 4);
-        lbl.setAttribute("font-size","11");
-        lbl.setAttribute("fill","var(--text)");
-        lbl.setAttribute("text-anchor","end");
-        svg.appendChild(lbl);
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / totalGridLines) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
       }
 
       const axis = document.createElementNS(svgNS,"line");
