@@ -574,11 +574,7 @@
 
       lensLayer.appendChild(clipPath);
       lensLayer.appendChild(lensContent);
-      // --- Clone all bars into the lensContent group ---
-      bars.forEach(bar => {
-        const clone = bar.cloneNode(true);
-        lensContent.appendChild(clone);
-      });
+     
       lensLayer.appendChild(lensOutline);
       svg.appendChild(lensLayer);
 
