@@ -1,4 +1,86 @@
-<!doctype html>
+      let lensInstance = null;
+      let tooltipInstance = null;
+      const lensRadius = 40;
+      const lensScale = 1.5;
+
+      function handleMove(e){
+        const rect = svg.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * w;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * h;
+        const x = Math.max(lensRadius, Math.min(w - lensRadius, mouseX));
+        const y = Math.max(lensRadius, Math.min(h - lensRadius, mouseY));
+
+        if(!lensInstance){
+          lensInstance = createLens(svg, lensRadius, lensScale);
+          const barClones = Array.from(svg.querySelectorAll("rect"))
+            .filter(r => r.__value !== undefined || r.getAttribute("fill"));
+          barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
+          svg.appendChild(lensInstance.group);
+        }
+
+        if(!tooltipInstance){
+          tooltipInstance = createTooltip(svg, true);
+        }
+
+        updateLens(lensInstance, x, y);
+
+        const idx = Math.max(0, Math.min(months.length - 1, Math.floor((x - padL) / barW)));
+        const monthRow = months[idx];
+        const month = monthRow.month;
+
+        const aggregates = data.reduce((acc, loan) => {
+          const row = loan.earningsSchedule[Math.min(idx, loan.earningsSchedule.length-1)] || {};
+          acc.principal += row.cumPrincipal || 0;
+          acc.interest += row.cumInterest || 0;
+          acc.fees += row.cumFees || 0;
+          acc.net += row.netEarnings || 0;
+          return acc;
+        }, {principal:0, interest:0, fees:0, net:0});
+
+        let tooltipLines = [];
+        if(containerId === "kpi1Chart"){ // Net earnings to date
+          tooltipLines = [
+            `Month M${month}`,
+            `Net: $${aggregates.net.toFixed(2)}`,
+            `Principal: $${aggregates.principal.toFixed(2)}`,
+            `Interest: $${aggregates.interest.toFixed(2)}`,
+            `Fees: -$${aggregates.fees.toFixed(2)}`
+          ];
+        } else if(containerId === "kpi2Chart"){ // Projected lifetime
+          tooltipLines = [
+            `Month M${month}`,
+            `Projected Net: $${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
+          ];
+        } else if(containerId === "kpi3Chart"){ // Average monthly
+          const avg = month > 0 ? aggregates.net / month : 0;
+          tooltipLines = [
+            `Month M${month}`,
+            `Avg / Month: $${avg.toFixed(2)}`,
+            `Net to Date: $${aggregates.net.toFixed(2)}`
+          ];
+        } else if(containerId === "kpi4Chart"){ // Fees
+          tooltipLines = [
+            `Month M${month}`,
+            `Fees: -$${aggregates.fees.toFixed(2)}`,
+            `Net: $${aggregates.net.toFixed(2)}`
+          ];
+        }
+
+        updateTooltipContent(tooltipInstance, tooltipLines, true);
+        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
+      }
+
+      function handleLeave(){
+        removeLens(svg, lensInstance);
+        lensInstance = null;
+        if(tooltipInstance){
+          tooltipInstance.group.remove();
+          tooltipInstance = null;
+        }
+      }
+
+      svg.addEventListener("mousemove", handleMove);
+      svg.addEventListener("mouseleave", handleLeave);<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -716,17 +798,18 @@
 
       let lensInstance = null;
       let tooltipInstance = null;
+      const lensRadius = 20;
+      const lensScale = 2;
 
       function handleMove(e){
         const rect = svg.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * w;
         const mouseY = ((e.clientY - rect.top) / rect.height) * h;
-        const radius = 30;
-        const x = Math.max(radius, Math.min(w - radius, mouseX));
-        const y = Math.max(radius, Math.min(h - radius, mouseY));
+        const x = Math.max(lensRadius, Math.min(w - lensRadius, mouseX));
+        const y = Math.max(lensRadius, Math.min(h - lensRadius, mouseY));
 
         if(!lensInstance){
-          lensInstance = createLens(svg, radius, 2, "#94a3b8", 1.5, "rgba(255,255,255,0.7)");
+          lensInstance = createLens(svg, lensRadius, lensScale);
           const barClones = Array.from(svg.querySelectorAll("rect"))
             .filter(r => r.__value !== undefined || r.getAttribute("fill"));
           barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
@@ -734,10 +817,10 @@
         }
 
         if(!tooltipInstance){
-          tooltipInstance = createTooltip(svg);
+          tooltipInstance = createTooltip(svg, false);
         }
 
-        updateLensPosition(lensInstance, x, y);
+        updateLens(lensInstance, x, y);
 
         const idx = Math.max(0, Math.min(data.length - 1, Math.floor((x - padL) / barW)));
         const row = data[idx];
@@ -750,7 +833,8 @@
           `Net: $${row.netEarnings.toFixed(2)}`
         ];
 
-        updateTooltip(tooltipInstance, x + radius + 8, y - radius, tooltipLines, { w, h, radius });
+        updateTooltipContent(tooltipInstance, tooltipLines, false);
+        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
       }
 
       function handleLeave(){
@@ -919,17 +1003,18 @@
 
       let lensInstance = null;
       let tooltipInstance = null;
+      const lensRadius = 40;
+      const lensScale = 1.5;
 
       function handleMove(e){
         const rect = svg.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * w;
         const mouseY = ((e.clientY - rect.top) / rect.height) * h;
-        const radius = 70;
-        const x = Math.max(radius, Math.min(w - radius, mouseX));
-        const y = Math.max(radius, Math.min(h - radius, mouseY));
+        const x = Math.max(lensRadius, Math.min(w - lensRadius, mouseX));
+        const y = Math.max(lensRadius, Math.min(h - lensRadius, mouseY));
 
         if(!lensInstance){
-          lensInstance = createLens(svg, radius, 2.3, "#94a3b8", 1.5, "rgba(255,255,255,0.68)");
+          lensInstance = createLens(svg, lensRadius, lensScale);
           const barClones = Array.from(svg.querySelectorAll("rect"))
             .filter(r => r.__value !== undefined || r.getAttribute("fill"));
           barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
@@ -940,37 +1025,22 @@
           tooltipInstance = createTooltip(svg, true);
         }
 
-        updateLensPosition(lensInstance, x, y);
+        updateLens(lensInstance, x, y);
 
         const idx = Math.max(0, Math.min(data.length - 1, Math.floor((x - padL) / barW)));
         const row = data[idx];
         const month = row.monthIndex || idx + 1;
 
-        let segment = "Net";
-        let value = row.netEarnings;
-        const hPrin = row.cumPrincipal * scale;
-        const hInt = row.cumInterest * scale;
-        const hFees = Math.abs(-row.cumFees) * scale;
-        const yInt = yZero - hInt;
-        const yPrin = yZero - hInt - hPrin;
-        if(hPrin > 0 && y >= yPrin && y <= yPrin + hPrin){
-          segment = "Principal";
-          value = row.cumPrincipal;
-        } else if(hInt > 0 && y >= yInt && y <= yInt + hInt){
-          segment = "Interest";
-          value = row.cumInterest;
-        } else if(hFees > 0 && y >= yZero && y <= yZero + hFees){
-          segment = "Fees";
-          value = -row.cumFees;
-        }
-
         const tooltipLines = [
           `${currentLoan ? "Loan " + currentLoan.id : "Loan"} • M${month}`,
-          `${segment}: $${value.toFixed(2)}`,
+          `Principal: $${row.cumPrincipal.toFixed(2)}`,
+          `Interest: $${row.cumInterest.toFixed(2)}`,
+          `Fees: -$${row.cumFees.toFixed(2)}`,
           `Net: $${row.netEarnings.toFixed(2)}`
         ];
 
-        updateTooltip(tooltipInstance, x + radius + 10, y - radius / 2, tooltipLines, { w, h, radius, large:true });
+        updateTooltipContent(tooltipInstance, tooltipLines, true);
+        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
       }
 
       function handleLeave(){
@@ -1415,17 +1485,18 @@
 
       let lensInstance = null;
       let tooltipInstance = null;
+      const lensRadius = 40;
+      const lensScale = 1.5;
 
       function handleMove(e){
         const rect = svg.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * w;
         const mouseY = ((e.clientY - rect.top) / rect.height) * h;
-        const radius = 70;
-        const x = Math.max(radius, Math.min(w - radius, mouseX));
-        const y = Math.max(radius, Math.min(h - radius, mouseY));
+        const x = Math.max(lensRadius, Math.min(w - lensRadius, mouseX));
+        const y = Math.max(lensRadius, Math.min(h - lensRadius, mouseY));
 
         if(!lensInstance){
-          lensInstance = createLens(svg, radius, 2.4, "#94a3b8", 1.5, "rgba(255,255,255,0.68)");
+          lensInstance = createLens(svg, lensRadius, lensScale);
           const barClones = Array.from(svg.querySelectorAll("rect"))
             .filter(r => r.__value !== undefined || r.getAttribute("fill"));
           barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
@@ -1436,56 +1507,52 @@
           tooltipInstance = createTooltip(svg, true);
         }
 
-        updateLensPosition(lensInstance, x, y);
+        updateLens(lensInstance, x, y);
 
         const idx = Math.max(0, Math.min(months.length - 1, Math.floor((x - padL) / barW)));
         const monthRow = months[idx];
         const month = monthRow.month;
 
-        let segment = null;
-        let value = monthRow.posTotal + monthRow.negTotal;
-        let color = "#0ea5e9";
+        const aggregates = data.reduce((acc, loan) => {
+          const row = loan.earningsSchedule[Math.min(idx, loan.earningsSchedule.length-1)] || {};
+          acc.principal += row.cumPrincipal || 0;
+          acc.interest += row.cumInterest || 0;
+          acc.fees += row.cumFees || 0;
+          acc.net += row.netEarnings || 0;
+          return acc;
+        }, {principal:0, interest:0, fees:0, net:0});
 
-        let yPos = yZero;
-        let yNeg = yZero;
-        const barWidth = Math.max(2, barW-4);
-        const withinBarX = x >= padL && x <= padL + count*barW;
-
-        if(withinBarX){
-          for(const c of monthRow.contributions){
-            const hVal = Math.abs(c.value) * scale;
-            if(hVal <= 0) continue;
-            if(c.value >= 0){
-              yPos -= hVal;
-              if(y >= yPos && y <= yPos + hVal){
-                segment = `Loan ${c.loanId}`;
-                value = c.value;
-                color = c.color;
-                break;
-              }
-            } else {
-              if(y >= yNeg && y <= yNeg + hVal){
-                segment = `Loan ${c.loanId}`;
-                value = c.value;
-                color = c.color;
-                break;
-              }
-              yNeg += hVal;
-            }
-          }
+        let tooltipLines = [];
+        if(containerId === "kpi1Chart"){ // Net earnings to date
+          tooltipLines = [
+            `Month M\${month}`,
+            `Net: $\${aggregates.net.toFixed(2)}`,
+            `Principal: $\${aggregates.principal.toFixed(2)}`,
+            `Interest: $\${aggregates.interest.toFixed(2)}`,
+            `Fees: -$\${aggregates.fees.toFixed(2)}`
+          ];
+        } else if(containerId === "kpi2Chart"){ // Projected lifetime
+          tooltipLines = [
+            `Month M\${month}`,
+            `Projected Net: $\${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
+          ];
+        } else if(containerId === "kpi3Chart"){ // Average monthly
+          const avg = month > 0 ? aggregates.net / month : 0;
+          tooltipLines = [
+            `Month M\${month}`,
+            `Avg / Month: $\${avg.toFixed(2)}`,
+            `Net to Date: $\${aggregates.net.toFixed(2)}`
+          ];
+        } else if(containerId === "kpi4Chart"){ // Fees
+          tooltipLines = [
+            `Month M\${month}`,
+            `Fees: -$\${aggregates.fees.toFixed(2)}`,
+            `Net: $\${aggregates.net.toFixed(2)}`
+          ];
         }
 
-        if(!segment){
-          segment = "Net";
-        }
-
-        const tooltipLines = [
-          `${segment} • M${month}`,
-          `Value: $${value.toFixed(2)}`,
-          `Total: $${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
-        ];
-
-        updateTooltip(tooltipInstance, x + radius + 12, y - radius / 2, tooltipLines, { w, h, radius, accent: color, large:true });
+        updateTooltipContent(tooltipInstance, tooltipLines, true);
+        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
       }
 
       function handleLeave(){
@@ -1595,7 +1662,7 @@
       renderKpiTable(containerId, ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
     }
 
-    function createLens(svg, radius, scale, borderColor = "#94a3b8", borderWidth = 1.5, bgFill = "rgba(255,255,255,0.6)"){
+    function createLens(svg, radius = 40, scale = 1.5, borderColor = "#94a3b8", borderWidth = 1.5, bgFill = "rgba(255,255,255,0.7)"){
       const svgNS = "http://www.w3.org/2000/svg";
       const defs = svg.querySelector("defs") || (()=>{ const d = document.createElementNS(svgNS,"defs"); svg.insertBefore(d, svg.firstChild); return d; })();
       const clipId = `lens-clip-${Math.random().toString(36).slice(2)}`;
@@ -1632,7 +1699,7 @@
       return { group, content, outline, bgCircle, clipCircle, clipPath, scale, radius };
     }
 
-    function updateLensPosition(lens, x, y){
+    function updateLens(lens, x, y){
       if(!lens) return;
       const tx = x - x * lens.scale;
       const ty = y - y * lens.scale;
@@ -1673,11 +1740,15 @@
       group.appendChild(textGroup);
       svg.appendChild(group);
 
-      return { group, rect, textGroup, lines: [] };
+      return { group, rect, textGroup, lines: [], large, width:0, height:0 };
     }
 
-    function updateTooltip(tooltip, x, y, lines, bounds){
+    function updateTooltipContent(tooltip, lines, large = false){
       if(!tooltip) return;
+      tooltip.large = large;
+      tooltip.rect.setAttribute("rx", large ? 8 : 6);
+      tooltip.rect.setAttribute("ry", large ? 8 : 6);
+      tooltip.textGroup.setAttribute("font-size", large ? "12" : "11");
       while(tooltip.lines.length < lines.length){
         const t = document.createElementNS("http://www.w3.org/2000/svg","text");
         tooltip.textGroup.appendChild(t);
@@ -1688,7 +1759,7 @@
         t.remove();
       }
 
-      const lineHeight = 14;
+      const lineHeight = large ? 15 : 14;
       let maxWidth = 0;
       tooltip.lines.forEach((t, idx) => {
         t.textContent = lines[idx];
@@ -1706,25 +1777,26 @@
       tooltip.rect.setAttribute("height", height);
       tooltip.rect.setAttribute("x", 0);
       tooltip.rect.setAttribute("y", 0);
+      tooltip.width = width;
+      tooltip.height = height;
+    }
 
-      let posX = x;
-      let posY = y;
+    function updateTooltipPosition(tooltip, cx, cy, radius){
+      if(!tooltip) return;
+      const width = tooltip.width || 0;
+      const height = tooltip.height || 0;
+      let posX = cx + radius * 0.3;
+      let posY = cy - radius * 0.3;
 
-      if(posX + width > bounds.w){
-        posX = Math.max(0, x - width - (bounds.radius || 0) - 8);
-      }
-      if(posY < 0){
-        posY = 4;
-      }
-      if(posY + height > bounds.h){
-        posY = bounds.h - height - 4;
-      }
+      const minX = cx - radius + 4;
+      const maxX = cx + radius - width - 4;
+      const minY = cy - radius + 4;
+      const maxY = cy + radius - height - 4;
+
+      posX = Math.max(minX, Math.min(maxX, posX));
+      posY = Math.max(minY, Math.min(maxY, posY));
 
       tooltip.group.setAttribute("transform", `translate(${posX}, ${posY})`);
-
-      if(bounds.accent){
-        tooltip.rect.setAttribute("stroke", bounds.accent);
-      }
     }
 
     // Shared drawer behavior handled above for both KPI and loan content.
