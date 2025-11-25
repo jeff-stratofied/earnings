@@ -312,6 +312,17 @@
   </style>
 </head>
 <body>
+  <div id="globalLensOverlay" 
+     style="
+       position:absolute;
+       top:0;
+       left:0;
+       width:100%;
+       height:100%;
+       pointer-events:none;
+       z-index:99999;
+     ">
+  </div>
   <div class="app" role="main">
     <header>
       <div class="header-top">
@@ -521,13 +532,18 @@
     function createSmallHoverLens(svg, bars, radius = 40) {
       const svgNS = "http://www.w3.org/2000/svg";
 
-      // Container for lens overlay
-      const lensLayer = document.createElementNS(svgNS, "g");
-      lensLayer.setAttribute("class", "small-hover-lens");
-      lensLayer.style.display = "none";
-      svg.appendChild(lensLayer);
+      const overlay = document.getElementById("globalLensOverlay");
 
-      // Circle that defines the lens boundary
+      // Clear previous overlay content
+      const lensLayer = document.createElementNS(svgNS, "svg");
+      lensLayer.style.position = "absolute";
+      lensLayer.style.top = "0";
+      lensLayer.style.left = "0";
+      lensLayer.style.pointerEvents = "none";
+      lensLayer.style.overflow = "visible";
+      overlay.appendChild(lensLayer);
+
+      // Lens circle
       const lensCircle = document.createElementNS(svgNS, "circle");
       lensCircle.setAttribute("r", radius);
       lensCircle.setAttribute("fill", "none");
@@ -535,22 +551,22 @@
       lensCircle.setAttribute("stroke-width", "1.5");
       lensLayer.appendChild(lensCircle);
 
-      // ClipPath to restrict zoomed content inside the circle
+      // Clip path
       const clipId = "small-lens-clip-" + Math.random().toString(36).slice(2);
-      const clip = document.createElementNS(svgNS, "clipPath");
-      clip.setAttribute("id", clipId);
+      const clipPath = document.createElementNS(svgNS, "clipPath");
+      clipPath.setAttribute("id", clipId);
 
       const clipCircle = document.createElementNS(svgNS, "circle");
       clipCircle.setAttribute("r", radius);
-      clip.appendChild(clipCircle);
-      svg.appendChild(clip);
+      clipPath.appendChild(clipCircle);
+      lensLayer.appendChild(clipPath);
 
-      // Group containing cloned bars (magnified)
+      // Magnified content container
       const lensContent = document.createElementNS(svgNS, "g");
       lensContent.setAttribute("clip-path", `url(#${clipId})`);
       lensLayer.appendChild(lensContent);
 
-      // Clone original bars into lensContent (NO per-bar scaling)
+      // Clone bars (NO per-bar transform)
       bars.forEach(bar => {
         const clone = bar.cloneNode(true);
         clone.removeAttribute("transform");
@@ -564,28 +580,75 @@
         const localX = e.clientX - svgRect.left;
         const localY = e.clientY - svgRect.top;
 
-        const offsetX = -(localX * (zoom - 1)) + radius;
-        const offsetY = -(localY * (zoom - 1)) + radius;
+        // Place lens circle in global overlay
+        lensCircle.setAttribute("cx", e.clientX);
+        lensCircle.setAttribute("cy", e.clientY);
+        clipCircle.setAttribute("cx", e.clientX);
+        clipCircle.setAttribute("cy", e.clientY);
+
+        // Translate magnified content so correct region is inside circle
+        const offsetX = -(localX * (zoom - 1)) + e.clientX - radius;
+        const offsetY = -(localY * (zoom - 1)) + e.clientY - radius;
 
         lensContent.setAttribute(
           "transform",
           `translate(${offsetX}, ${offsetY}) scale(${zoom})`
         );
 
-        lensCircle.setAttribute("cx", localX);
-        lensCircle.setAttribute("cy", localY);
-        clipCircle.setAttribute("cx", localX);
-        clipCircle.setAttribute("cy", localY);
-
         lensLayer.style.display = "block";
+
+        // --- Tooltip callout ---
+        updateSmallLensTooltip(e, svg, bars, localX, localY);
       }
 
       function leave() {
         lensLayer.style.display = "none";
+        hideSmallLensTooltip();
       }
 
       svg.addEventListener("mousemove", move);
       svg.addEventListener("mouseleave", leave);
+    }
+
+    function updateSmallLensTooltip(e, svg, bars, localX, localY) {
+      let tooltip = document.getElementById("smallLensTooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.id = "smallLensTooltip";
+        tooltip.style.position = "absolute";
+        tooltip.style.zIndex = "100000";
+        tooltip.style.pointerEvents = "none";
+        tooltip.style.background = "white";
+        tooltip.style.border = "1px solid #ccc";
+        tooltip.style.borderRadius = "6px";
+        tooltip.style.padding = "6px 10px";
+        tooltip.style.fontSize = "12px";
+        document.body.appendChild(tooltip);
+      }
+
+      const svgRect = svg.getBoundingClientRect();
+      tooltip.style.left = (e.clientX + 15) + "px";
+      tooltip.style.top = (e.clientY - 20) + "px";
+
+      // Determine which bar is under the lens center
+      const bar = bars.find(b => {
+        const x = parseFloat(b.getAttribute("x"));
+        const w = parseFloat(b.getAttribute("width"));
+        return localX >= x && localX <= x + w;
+      });
+
+      if (bar) {
+        const value = bar.__value || "";
+        tooltip.innerHTML = `Value: ${value}`;
+        tooltip.style.display = "block";
+      } else {
+        tooltip.style.display = "none";
+      }
+    }
+
+    function hideSmallLensTooltip() {
+      const tooltip = document.getElementById("smallLensTooltip");
+      if (tooltip) tooltip.style.display = "none";
     }
 
     function createHoverLens(svg, bars, radius = 80){
