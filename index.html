@@ -295,6 +295,21 @@
     }
     .theme-icon:hover{ opacity:0.7; }
 
+    .lens-tooltip-html {
+      position: fixed;
+      z-index: 300;
+      pointer-events: none;
+      background: rgba(15,23,42,0.92);
+      color: #fff;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #0ea5e9;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.45);
+      white-space: nowrap;
+    }
+
   </style>
 </head>
 <body>
@@ -605,6 +620,39 @@
     const kpis = computeEarningsKPIs(loansWithEarnings);
     const totalPrincipal = loans.reduce((s,l)=>s+l.purchasePrice,0);
 
+    let miniHtmlTooltip = null;
+    function getMiniHtmlTooltip() {
+      if (!miniHtmlTooltip) {
+        miniHtmlTooltip = document.createElement("div");
+        miniHtmlTooltip.className = "lens-tooltip-html";
+        miniHtmlTooltip.style.display = "none";
+        document.body.appendChild(miniHtmlTooltip);
+      }
+      return miniHtmlTooltip;
+    }
+
+    function setMiniTooltipContent(lines) {
+      const el = getMiniHtmlTooltip();
+      el.innerHTML = lines.join("<br>");
+    }
+
+    function positionMiniTooltip(clientX, clientY, radius) {
+      const el = getMiniHtmlTooltip();
+      const rect = el.getBoundingClientRect();
+      const offsetX = radius * 0.3;
+      const offsetY = radius * 1.1;
+      let x = clientX + offsetX;
+      let y = clientY - offsetY - rect.height;
+
+      el.style.left = `${x}px`;
+      el.style.top  = `${y}px`;
+      el.style.display = "block";
+    }
+
+    function hideMiniTooltip() {
+      if (miniHtmlTooltip) miniHtmlTooltip.style.display = "none";
+    }
+
     // --------------------------
     // Mini stacked earnings chart (per tile)
     // --------------------------
@@ -715,7 +763,6 @@
       containerEl.appendChild(svg);
 
       let lensInstance = null;
-      let tooltipInstance = null;
       const lensRadius = 20;
       const lensScale = 2;
 
@@ -734,10 +781,6 @@
           svg.appendChild(lensInstance.group);
         }
 
-        if(!tooltipInstance){
-          tooltipInstance = createTooltip(svg, false);
-        }
-
         updateLens(lensInstance, x, y);
 
         const idx = Math.max(0, Math.min(data.length - 1, Math.floor((x - padL) / barW)));
@@ -751,17 +794,14 @@
           `Net: $${row.netEarnings.toFixed(2)}`
         ];
 
-        updateTooltipContent(tooltipInstance, tooltipLines, false);
-        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
+        setMiniTooltipContent(tooltipLines);
+        positionMiniTooltip(e.clientX, e.clientY, lensRadius);
       }
 
       function handleLeave(){
         removeLens(svg, lensInstance);
         lensInstance = null;
-        if(tooltipInstance){
-          tooltipInstance.group.remove();
-          tooltipInstance = null;
-        }
+        hideMiniTooltip();
       }
 
       svg.addEventListener("mousemove", handleMove);
@@ -1257,10 +1297,12 @@
     // ======================
     const loanColors = ["#0ea5e9", "#22c55e", "#7c3aed", "#14b8a6", "#f59e0b", "#ef4444", "#6366f1", "#a855f7", "#f97316", "#06b6d4"];
 
-    function buildKpiStackedChart(containerId, data, valueGetter, showCurrentLine = true){
+    function buildKpiStackedChart(containerId, data, valueGetter, showCurrentLine = true, mode = null){
       const container = document.getElementById(containerId);
       if(!container) return;
       container.innerHTML = "";
+
+      const key = mode || containerId;
 
       const svgNS = "http://www.w3.org/2000/svg";
       const rect = container.getBoundingClientRect();
@@ -1441,7 +1483,7 @@
         }, {principal:0, interest:0, fees:0, net:0});
 
         let tooltipLines = [];
-        if(containerId === "kpi1Chart"){ // Net earnings to date
+        if(key === "kpi1"){ // Net earnings to date
           tooltipLines = [
             `Month M\${month}`,
             `Net: $\${aggregates.net.toFixed(2)}`,
@@ -1449,19 +1491,19 @@
             `Interest: $\${aggregates.interest.toFixed(2)}`,
             `Fees: -$\${aggregates.fees.toFixed(2)}`
           ];
-        } else if(containerId === "kpi2Chart"){ // Projected lifetime
+        } else if(key === "kpi2"){ // Projected lifetime
           tooltipLines = [
             `Month M\${month}`,
             `Projected Net: $\${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
           ];
-        } else if(containerId === "kpi3Chart"){ // Average monthly
+        } else if(key === "kpi3"){ // Average monthly
           const avg = month > 0 ? aggregates.net / month : 0;
           tooltipLines = [
             `Month M\${month}`,
             `Avg / Month: $\${avg.toFixed(2)}`,
             `Net to Date: $\${aggregates.net.toFixed(2)}`
           ];
-        } else if(containerId === "kpi4Chart"){ // Fees
+        } else if(key === "kpi4"){ // Fees
           tooltipLines = [
             `Month M\${month}`,
             `Fees: -$\${aggregates.fees.toFixed(2)}`,
@@ -1492,19 +1534,19 @@
         ...loan,
         earningsSchedule: loan.earningsSchedule.slice(0, 18)
       }));
-      buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false);
+      buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false, "kpi1");
     }
     function renderKPI2Chart(data, containerId = "kpi2Chart"){
-      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
+      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0, true, "kpi2");
     }
     function renderKPI3Chart(data, containerId = "kpi3Chart"){
       buildKpiStackedChart(containerId, data, (row, month) => {
         const net = row.netEarnings || 0;
         return month > 0 ? net / month : 0;
-      });
+      }, true, "kpi3");
     }
     function renderKPI4Chart(data, containerId = "kpi4Chart"){
-      buildKpiStackedChart(containerId, data, row => -(row.cumFees || 0));
+      buildKpiStackedChart(containerId, data, row => -(row.cumFees || 0), true, "kpi4");
     }
 
     // ======================
@@ -1704,8 +1746,8 @@
       const width = tooltip.width || 0;
       const height = tooltip.height || 0;
 
-      let dx = radius * 0.30;
-      let dy = -radius * 0.30;
+      let dx = radius * 0.45;
+      let dy = -radius * 0.85;
 
       let tooltipX = cx + dx;
       let tooltipY = cy + dy;
@@ -1744,6 +1786,9 @@
 
         if(!adjusted) break;
       }
+
+      tooltipX = Math.max(tooltipX, cx + 2);
+      tooltipY = Math.min(tooltipY, cy - height - 2);
 
       tooltip.group.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
     }
