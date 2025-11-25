@@ -312,7 +312,7 @@
   </style>
 </head>
 <body>
-  <div id="globalLensOverlay" 
+  <div id="globalLensOverlay"
      style="
        position:absolute;
        top:0;
@@ -322,6 +322,9 @@
        pointer-events:none;
        z-index:99999;
      ">
+    <svg id="globalLensSVG"
+         style="position:absolute; top:0; left:0; overflow:visible; pointer-events:none; z-index:99999;">
+    </svg>
   </div>
   <div class="app" role="main">
     <header>
@@ -532,16 +535,8 @@
     function createSmallHoverLens(svg, bars, radius = 40) {
       const svgNS = "http://www.w3.org/2000/svg";
 
-      const overlay = document.getElementById("globalLensOverlay");
-
-      // Clear previous overlay content
-      const lensLayer = document.createElementNS(svgNS, "svg");
-      lensLayer.style.position = "absolute";
-      lensLayer.style.top = "0";
-      lensLayer.style.left = "0";
-      lensLayer.style.pointerEvents = "none";
-      lensLayer.style.overflow = "visible";
-      overlay.appendChild(lensLayer);
+      const globalSVG = document.getElementById("globalLensSVG");
+      while (globalSVG.firstChild) globalSVG.removeChild(globalSVG.firstChild);
 
       // Lens circle
       const lensCircle = document.createElementNS(svgNS, "circle");
@@ -549,7 +544,7 @@
       lensCircle.setAttribute("fill", "none");
       lensCircle.setAttribute("stroke", "#4aa4ff");
       lensCircle.setAttribute("stroke-width", "1.5");
-      lensLayer.appendChild(lensCircle);
+      globalSVG.appendChild(lensCircle);
 
       // Clip path
       const clipId = "small-lens-clip-" + Math.random().toString(36).slice(2);
@@ -559,12 +554,12 @@
       const clipCircle = document.createElementNS(svgNS, "circle");
       clipCircle.setAttribute("r", radius);
       clipPath.appendChild(clipCircle);
-      lensLayer.appendChild(clipPath);
+      globalSVG.appendChild(clipPath);
 
       // Magnified content container
       const lensContent = document.createElementNS(svgNS, "g");
       lensContent.setAttribute("clip-path", `url(#${clipId})`);
-      lensLayer.appendChild(lensContent);
+      globalSVG.appendChild(lensContent);
 
       // Clone bars (NO per-bar transform)
       bars.forEach(bar => {
@@ -580,13 +575,6 @@
         const localX = e.clientX - svgRect.left;
         const localY = e.clientY - svgRect.top;
 
-        // Place lens circle in global overlay
-        lensCircle.setAttribute("cx", e.clientX);
-        lensCircle.setAttribute("cy", e.clientY);
-        clipCircle.setAttribute("cx", e.clientX);
-        clipCircle.setAttribute("cy", e.clientY);
-
-        // Translate magnified content so correct region is inside circle
         const offsetX = -(localX * (zoom - 1)) + e.clientX - radius;
         const offsetY = -(localY * (zoom - 1)) + e.clientY - radius;
 
@@ -595,14 +583,19 @@
           `translate(${offsetX}, ${offsetY}) scale(${zoom})`
         );
 
-        lensLayer.style.display = "block";
+        lensCircle.setAttribute("cx", e.clientX);
+        lensCircle.setAttribute("cy", e.clientY);
+        clipCircle.setAttribute("cx", e.clientX);
+        clipCircle.setAttribute("cy", e.clientY);
+
+        globalSVG.style.display = "block";
 
         // --- Tooltip callout ---
         updateSmallLensTooltip(e, svg, bars, localX, localY);
       }
 
       function leave() {
-        lensLayer.style.display = "none";
+        globalSVG.style.display = "none";
         hideSmallLensTooltip();
       }
 
