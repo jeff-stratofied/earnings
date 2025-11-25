@@ -510,6 +510,20 @@
     const CURRENT_MONTH = 18; // keep in sync with ROI page if you want
     document.getElementById("currentMonthLabel").textContent = CURRENT_MONTH;
 
+    const globalSVG = document.getElementById("globalLensSVG");
+
+    function resizeGlobalLensSVG() {
+      if (!globalSVG) return;
+      const w = window.innerWidth || document.documentElement.clientWidth || 1200;
+      const h = window.innerHeight || document.documentElement.clientHeight || 800;
+      globalSVG.setAttribute("width", w);
+      globalSVG.setAttribute("height", h);
+      globalSVG.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    }
+
+    resizeGlobalLensSVG();
+    window.addEventListener("resize", resizeGlobalLensSVG);
+
     // Loan metadata: same as ROI, with feePerMonth added.
     // TODO: Update feePerMonth values from Earnings.xlsx N1:T11 (col T).
     const loans = [
@@ -535,7 +549,7 @@
     function createSmallHoverLens(svg, bars, radius = 28) {
       const svgNS = "http://www.w3.org/2000/svg";
 
-      const globalSVG = document.getElementById("globalLensSVG");
+      if (!globalSVG) return;
       while (globalSVG.firstChild) globalSVG.removeChild(globalSVG.firstChild);
 
       // Lens circle
