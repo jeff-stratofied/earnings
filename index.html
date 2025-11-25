@@ -713,6 +713,57 @@
       svg.appendChild(vline);
 
       containerEl.appendChild(svg);
+
+      let lensInstance = null;
+      let tooltipInstance = null;
+
+      function handleMove(e){
+        const rect = svg.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * w;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * h;
+        const radius = 30;
+        const x = Math.max(radius, Math.min(w - radius, mouseX));
+        const y = Math.max(radius, Math.min(h - radius, mouseY));
+
+        if(!lensInstance){
+          lensInstance = createLens(svg, radius, 2, "#94a3b8", 1.5, "rgba(255,255,255,0.7)");
+          const barClones = Array.from(svg.querySelectorAll("rect"))
+            .filter(r => r.__value !== undefined || r.getAttribute("fill"));
+          barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
+          svg.appendChild(lensInstance.group);
+        }
+
+        if(!tooltipInstance){
+          tooltipInstance = createTooltip(svg);
+        }
+
+        updateLensPosition(lensInstance, x, y);
+
+        const idx = Math.max(0, Math.min(data.length - 1, Math.floor((x - padL) / barW)));
+        const row = data[idx];
+        const month = row.monthIndex || idx + 1;
+        const tooltipLines = [
+          `Month M${month}`,
+          `Principal: $${row.cumPrincipal.toFixed(2)}`,
+          `Interest: $${row.cumInterest.toFixed(2)}`,
+          `Fees: -$${row.cumFees.toFixed(2)}`,
+          `Net: $${row.netEarnings.toFixed(2)}`
+        ];
+
+        updateTooltip(tooltipInstance, x + radius + 8, y - radius, tooltipLines, { w, h, radius });
+      }
+
+      function handleLeave(){
+        removeLens(svg, lensInstance);
+        lensInstance = null;
+        if(tooltipInstance){
+          tooltipInstance.group.remove();
+          tooltipInstance = null;
+        }
+      }
+
+      svg.addEventListener("mousemove", handleMove);
+      svg.addEventListener("mouseleave", handleLeave);
     }
 
 
@@ -865,6 +916,74 @@
       svg.appendChild(vline);
 
       containerEl.appendChild(svg);
+
+      let lensInstance = null;
+      let tooltipInstance = null;
+
+      function handleMove(e){
+        const rect = svg.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * w;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * h;
+        const radius = 70;
+        const x = Math.max(radius, Math.min(w - radius, mouseX));
+        const y = Math.max(radius, Math.min(h - radius, mouseY));
+
+        if(!lensInstance){
+          lensInstance = createLens(svg, radius, 2.3, "#94a3b8", 1.5, "rgba(255,255,255,0.68)");
+          const barClones = Array.from(svg.querySelectorAll("rect"))
+            .filter(r => r.__value !== undefined || r.getAttribute("fill"));
+          barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
+          svg.appendChild(lensInstance.group);
+        }
+
+        if(!tooltipInstance){
+          tooltipInstance = createTooltip(svg, true);
+        }
+
+        updateLensPosition(lensInstance, x, y);
+
+        const idx = Math.max(0, Math.min(data.length - 1, Math.floor((x - padL) / barW)));
+        const row = data[idx];
+        const month = row.monthIndex || idx + 1;
+
+        let segment = "Net";
+        let value = row.netEarnings;
+        const hPrin = row.cumPrincipal * scale;
+        const hInt = row.cumInterest * scale;
+        const hFees = Math.abs(-row.cumFees) * scale;
+        const yInt = yZero - hInt;
+        const yPrin = yZero - hInt - hPrin;
+        if(hPrin > 0 && y >= yPrin && y <= yPrin + hPrin){
+          segment = "Principal";
+          value = row.cumPrincipal;
+        } else if(hInt > 0 && y >= yInt && y <= yInt + hInt){
+          segment = "Interest";
+          value = row.cumInterest;
+        } else if(hFees > 0 && y >= yZero && y <= yZero + hFees){
+          segment = "Fees";
+          value = -row.cumFees;
+        }
+
+        const tooltipLines = [
+          `${currentLoan ? "Loan " + currentLoan.id : "Loan"} • M${month}`,
+          `${segment}: $${value.toFixed(2)}`,
+          `Net: $${row.netEarnings.toFixed(2)}`
+        ];
+
+        updateTooltip(tooltipInstance, x + radius + 10, y - radius / 2, tooltipLines, { w, h, radius, large:true });
+      }
+
+      function handleLeave(){
+        removeLens(svg, lensInstance);
+        lensInstance = null;
+        if(tooltipInstance){
+          tooltipInstance.group.remove();
+          tooltipInstance = null;
+        }
+      }
+
+      svg.addEventListener("mousemove", handleMove);
+      svg.addEventListener("mouseleave", handleLeave);
     }
 
     // --------------------------
@@ -1293,6 +1412,93 @@
       }
 
       container.appendChild(svg);
+
+      let lensInstance = null;
+      let tooltipInstance = null;
+
+      function handleMove(e){
+        const rect = svg.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * w;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * h;
+        const radius = 70;
+        const x = Math.max(radius, Math.min(w - radius, mouseX));
+        const y = Math.max(radius, Math.min(h - radius, mouseY));
+
+        if(!lensInstance){
+          lensInstance = createLens(svg, radius, 2.4, "#94a3b8", 1.5, "rgba(255,255,255,0.68)");
+          const barClones = Array.from(svg.querySelectorAll("rect"))
+            .filter(r => r.__value !== undefined || r.getAttribute("fill"));
+          barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
+          svg.appendChild(lensInstance.group);
+        }
+
+        if(!tooltipInstance){
+          tooltipInstance = createTooltip(svg, true);
+        }
+
+        updateLensPosition(lensInstance, x, y);
+
+        const idx = Math.max(0, Math.min(months.length - 1, Math.floor((x - padL) / barW)));
+        const monthRow = months[idx];
+        const month = monthRow.month;
+
+        let segment = null;
+        let value = monthRow.posTotal + monthRow.negTotal;
+        let color = "#0ea5e9";
+
+        let yPos = yZero;
+        let yNeg = yZero;
+        const barWidth = Math.max(2, barW-4);
+        const withinBarX = x >= padL && x <= padL + count*barW;
+
+        if(withinBarX){
+          for(const c of monthRow.contributions){
+            const hVal = Math.abs(c.value) * scale;
+            if(hVal <= 0) continue;
+            if(c.value >= 0){
+              yPos -= hVal;
+              if(y >= yPos && y <= yPos + hVal){
+                segment = `Loan ${c.loanId}`;
+                value = c.value;
+                color = c.color;
+                break;
+              }
+            } else {
+              if(y >= yNeg && y <= yNeg + hVal){
+                segment = `Loan ${c.loanId}`;
+                value = c.value;
+                color = c.color;
+                break;
+              }
+              yNeg += hVal;
+            }
+          }
+        }
+
+        if(!segment){
+          segment = "Net";
+        }
+
+        const tooltipLines = [
+          `${segment} • M${month}`,
+          `Value: $${value.toFixed(2)}`,
+          `Total: $${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
+        ];
+
+        updateTooltip(tooltipInstance, x + radius + 12, y - radius / 2, tooltipLines, { w, h, radius, accent: color, large:true });
+      }
+
+      function handleLeave(){
+        removeLens(svg, lensInstance);
+        lensInstance = null;
+        if(tooltipInstance){
+          tooltipInstance.group.remove();
+          tooltipInstance = null;
+        }
+      }
+
+      svg.addEventListener("mousemove", handleMove);
+      svg.addEventListener("mouseleave", handleLeave);
     }
 
 
@@ -1387,6 +1593,138 @@
         ];
       });
       renderKpiTable(containerId, ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
+    }
+
+    function createLens(svg, radius, scale, borderColor = "#94a3b8", borderWidth = 1.5, bgFill = "rgba(255,255,255,0.6)"){
+      const svgNS = "http://www.w3.org/2000/svg";
+      const defs = svg.querySelector("defs") || (()=>{ const d = document.createElementNS(svgNS,"defs"); svg.insertBefore(d, svg.firstChild); return d; })();
+      const clipId = `lens-clip-${Math.random().toString(36).slice(2)}`;
+      const clipPath = document.createElementNS(svgNS,"clipPath");
+      clipPath.setAttribute("id", clipId);
+      const clipCircle = document.createElementNS(svgNS,"circle");
+      clipCircle.setAttribute("r", radius);
+      clipPath.appendChild(clipCircle);
+      defs.appendChild(clipPath);
+
+      const group = document.createElementNS(svgNS,"g");
+      group.setAttribute("pointer-events","none");
+
+      const bgCircle = document.createElementNS(svgNS,"circle");
+      bgCircle.setAttribute("r", radius);
+      bgCircle.setAttribute("fill", bgFill);
+      bgCircle.setAttribute("stroke", borderColor);
+      bgCircle.setAttribute("stroke-width", borderWidth);
+      bgCircle.setAttribute("opacity","0.95");
+
+      const content = document.createElementNS(svgNS,"g");
+      content.setAttribute("clip-path", `url(#${clipId})`);
+
+      const outline = document.createElementNS(svgNS,"circle");
+      outline.setAttribute("r", radius);
+      outline.setAttribute("fill","none");
+      outline.setAttribute("stroke", borderColor);
+      outline.setAttribute("stroke-width", borderWidth);
+
+      group.appendChild(bgCircle);
+      group.appendChild(content);
+      group.appendChild(outline);
+
+      return { group, content, outline, bgCircle, clipCircle, clipPath, scale, radius };
+    }
+
+    function updateLensPosition(lens, x, y){
+      if(!lens) return;
+      const tx = x - x * lens.scale;
+      const ty = y - y * lens.scale;
+      lens.clipCircle.setAttribute("cx", x);
+      lens.clipCircle.setAttribute("cy", y);
+      lens.bgCircle.setAttribute("cx", x);
+      lens.bgCircle.setAttribute("cy", y);
+      lens.outline.setAttribute("cx", x);
+      lens.outline.setAttribute("cy", y);
+      lens.content.setAttribute("transform", `translate(${tx}, ${ty}) scale(${lens.scale})`);
+    }
+
+    function removeLens(svg, lens){
+      if(!lens) return;
+      if(lens.group && lens.group.parentNode === svg) svg.removeChild(lens.group);
+      if(lens.clipPath && lens.clipPath.parentNode) lens.clipPath.parentNode.removeChild(lens.clipPath);
+    }
+
+    function createTooltip(svg, large = false){
+      const svgNS = "http://www.w3.org/2000/svg";
+      const group = document.createElementNS(svgNS,"g");
+      group.setAttribute("pointer-events","none");
+      group.setAttribute("opacity","0.95");
+
+      const rect = document.createElementNS(svgNS,"rect");
+      rect.setAttribute("rx", large ? 8 : 6);
+      rect.setAttribute("ry", large ? 8 : 6);
+      rect.setAttribute("fill","rgba(15,23,42,0.92)");
+      rect.setAttribute("stroke","#0ea5e9");
+      rect.setAttribute("stroke-width","0.6");
+
+      const textGroup = document.createElementNS(svgNS,"g");
+      textGroup.setAttribute("fill","#fff");
+      textGroup.setAttribute("font-size", large ? "12" : "11");
+      textGroup.setAttribute("font-weight","600");
+
+      group.appendChild(rect);
+      group.appendChild(textGroup);
+      svg.appendChild(group);
+
+      return { group, rect, textGroup, lines: [] };
+    }
+
+    function updateTooltip(tooltip, x, y, lines, bounds){
+      if(!tooltip) return;
+      while(tooltip.lines.length < lines.length){
+        const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+        tooltip.textGroup.appendChild(t);
+        tooltip.lines.push(t);
+      }
+      while(tooltip.lines.length > lines.length){
+        const t = tooltip.lines.pop();
+        t.remove();
+      }
+
+      const lineHeight = 14;
+      let maxWidth = 0;
+      tooltip.lines.forEach((t, idx) => {
+        t.textContent = lines[idx];
+        t.setAttribute("x", 6);
+        t.setAttribute("y", 12 + idx * lineHeight);
+        maxWidth = Math.max(maxWidth, t.getBBox().width);
+      });
+
+      const paddingX = 10;
+      const paddingY = 8;
+      const width = maxWidth + paddingX * 2;
+      const height = lines.length * lineHeight + paddingY;
+
+      tooltip.rect.setAttribute("width", width);
+      tooltip.rect.setAttribute("height", height);
+      tooltip.rect.setAttribute("x", 0);
+      tooltip.rect.setAttribute("y", 0);
+
+      let posX = x;
+      let posY = y;
+
+      if(posX + width > bounds.w){
+        posX = Math.max(0, x - width - (bounds.radius || 0) - 8);
+      }
+      if(posY < 0){
+        posY = 4;
+      }
+      if(posY + height > bounds.h){
+        posY = bounds.h - height - 4;
+      }
+
+      tooltip.group.setAttribute("transform", `translate(${posX}, ${posY})`);
+
+      if(bounds.accent){
+        tooltip.rect.setAttribute("stroke", bounds.accent);
+      }
     }
 
     // Shared drawer behavior handled above for both KPI and loan content.
