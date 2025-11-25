@@ -561,14 +561,18 @@
 
       const zoom = 2.0;
 
-      function move(x, y){
+      function move(mouseX, mouseY){
         lensLayer.style.display = "block";
-        clipCircle.setAttribute("cx", x);
-        clipCircle.setAttribute("cy", y);
-        lensOutline.setAttribute("cx", x);
-        lensOutline.setAttribute("cy", y);
-        const offsetX = -(x * (zoom - 1));
-        const offsetY = -(y * (zoom - 1));
+        const svgRect = svg.getBoundingClientRect();
+        const localX = mouseX - svgRect.left;
+        const localY = mouseY - svgRect.top;
+
+        clipCircle.setAttribute("cx", localX);
+        clipCircle.setAttribute("cy", localY);
+        lensOutline.setAttribute("cx", localX);
+        lensOutline.setAttribute("cy", localY);
+        const offsetX = -(localX * (zoom - 1));
+        const offsetY = -(localY * (zoom - 1));
 
         lensContent.setAttribute(
           "transform",
@@ -1057,7 +1061,7 @@
           return;
         }
 
-        lens.move(cx, cy);
+        lens.move(ev.clientX, ev.clientY);
 
         const monthIdx = Math.max(0, Math.min(data.length - 1, Math.floor((cx - padL) / barW)));
         const hovered = data[monthIdx];
@@ -1630,7 +1634,7 @@
           return;
         }
 
-        lens.move(cx, cy);
+        lens.move(ev.clientX, ev.clientY);
 
         const monthIdx = Math.max(0, Math.min(months.length - 1, Math.floor((cx - padL) / barW)));
         const month = months[monthIdx];
