@@ -279,20 +279,6 @@
     }
     td:first-child, th:first-child{ text-align:left; }
 
-    .tooltip{ position:fixed; z-index:999999;
-      position:fixed;
-      pointer-events:none;
-      background:#0f172a;
-      color:white;
-      padding:6px 8px;
-      border-radius:6px;
-      font-size:12px;
-      transform:translate(-50%,-120%);
-      box-shadow:0 6px 18px rgba(2,6,23,0.2);
-      display:none;
-      z-index:9999;
-      line-height:1.12;
-    }
     .small{ font-size:12px; color:var(--muted); }
 
     @media(max-width:760px){
@@ -518,7 +504,6 @@
       bar.setAttribute("data-stack-index", index);
     }
 
-
     // --------------------------
     // Amortization + earnings
     // --------------------------
@@ -634,13 +619,12 @@
       const h = 48;
       const padL = 4, padR = 4, padT = 4, padB = 4;
 
-      const data = earningsSchedule; // full life of loan
+      const data = earningsSchedule;
 
-      // compute pos/neg ranges using negative fees
       let maxAbs = 0;
       data.forEach(d => {
         const pos = d.cumPrincipal + d.cumInterest;
-        const neg = -d.cumFees; // negative
+        const neg = -d.cumFees;
         maxAbs = Math.max(maxAbs, pos, Math.abs(neg));
       });
       if(maxAbs <= 0) maxAbs = 1;
@@ -656,13 +640,9 @@
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","48");
-      svg.dataset.padL = padL;
-      svg.dataset.barW = barW;
 
       const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
-      const bars = [];
 
-      // zero axis
       const axis = document.createElementNS(svgNS,"line");
       axis.setAttribute("x1",padL);
       axis.setAttribute("x2",w-padR);
@@ -689,7 +669,6 @@
 
         const barWidth = Math.max(1, barW-2);
 
-        // principal (top)
         const rPrin = document.createElementNS(svgNS,"rect");
         rPrin.setAttribute("x", x+1);
         rPrin.setAttribute("y", yPrin);
@@ -699,7 +678,6 @@
         rPrin.__value = principal;
         prepareStackedBar(rPrin, stackedGroupId, 0, true);
 
-        // interest (middle)
         const rInt = document.createElementNS(svgNS,"rect");
         rInt.setAttribute("x", x+1);
         rInt.setAttribute("y", yInt);
@@ -709,7 +687,6 @@
         rInt.__value  = interest;
         prepareStackedBar(rInt, stackedGroupId, 1, true);
 
-        // fees (negative, below axis)
         const rFee = document.createElementNS(svgNS,"rect");
         rFee.setAttribute("x", x+1);
         rFee.setAttribute("y", yFee);
@@ -722,56 +699,67 @@
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
         svg.appendChild(rFee);
-
-        bars.push(rPrin, rInt, rFee);
       });
 
+      const currentX = padL + (CURRENT_MONTH - 1) * barW;
+      const vline = document.createElementNS(svgNS, "line");
+      vline.setAttribute("x1", currentX);
+      vline.setAttribute("x2", currentX);
+      vline.setAttribute("y1", 0);
+      vline.setAttribute("y2", h);
+      vline.setAttribute("stroke", "#64748b");
+      vline.setAttribute("stroke-dasharray", "4,3");
+      vline.setAttribute("stroke-width", "1");
+      svg.appendChild(vline);
 
-      const months = Array.from({length:maxMonths}, (_,i) => {
-        const month = i+1;
-        const contributions = data.map(loan => {
-          const row = loan.earningsSchedule[Math.min(i, loan.earningsSchedule.length-1)];
-          const value = valueGetter(row || {}, month, loan);
-          return {
-            loanId: loan.id,
-            value,
-            color: loanColors[(loan.id - 1) % loanColors.length]
-          };
-        });
-        const posTotal = contributions.reduce((sum,c) => c.value > 0 ? sum + c.value : sum, 0);
-        const negTotal = contributions.reduce((sum,c) => c.value < 0 ? sum + c.value : sum, 0);
-        return { month, contributions, posTotal, negTotal };
-      });
+      containerEl.appendChild(svg);
+    }
+
+
+
+    // --------------------------
+    // Drawer stacked chart (larger)
+    // --------------------------
+    
+    // --------------------------
+    // Drawer stacked chart (larger)
+    // --------------------------
+    function createDrawerStackedChart(containerEl, earningsSchedule){
+      containerEl.innerHTML = "";
+      const svgNS = "http://www.w3.org/2000/svg";
+      const rect = containerEl.getBoundingClientRect();
+      const w = Math.max(360, rect.width || 700);
+      const h = 260;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
+
+      const data = earningsSchedule;
 
       let maxValue = 0;
       let minValue = 0;
-      months.forEach(m => {
-        maxValue = Math.max(maxValue, m.posTotal);
-        minValue = Math.min(minValue, m.negTotal);
+      data.forEach(d => {
+        const pos = d.cumPrincipal + d.cumInterest;
+        const neg = -d.cumFees;
+        maxValue = Math.max(maxValue, pos);
+        minValue = Math.min(minValue, neg);
       });
 
       const yMax = Math.max(maxValue, 1);
-      // Allow exactly two grid steps below zero
-      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
+      const yMin = minValue < -10 ? minValue : -(yMax * 0.10);
       const yRange = yMax - yMin || 1;
       const usableHeight = h - padT - padB;
       const scale = usableHeight / yRange;
       const yZero = padT + (yMax / yRange) * usableHeight;
 
-      const count = months.length;
+      const count = data.length;
       const barW = (w - padL - padR) / Math.max(1, count);
 
-      const svg = document.createElementNS(svgNS, "svg");
+      const svg = document.createElementNS(svgNS,"svg");
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
-      svg.dataset.padL = padL;
-      svg.dataset.barW = barW;
 
-      const chartId = containerId || `kpi-${stackedBarGroupCounter++}`;
-
-      const gridBelowZero = 2;   // Always two gridlines below zero
-      const gridAboveZero = 4;   // Keep existing 4–5 above-zero lines
+      const gridBelowZero = 2;
+      const gridAboveZero = 4;
 
       for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
         const y = yZero - gy * ((yZero - padT) / gridAboveZero);
@@ -807,7 +795,490 @@
       axis.setAttribute("stroke-width","1");
       svg.appendChild(axis);
 
-      
+      data.forEach((d, i) => {
+        const stackedGroupId = `stack-drawer-${d.monthIndex || i}`;
+        const x = padL + i*barW;
+
+        const principal = d.cumPrincipal;
+        const interest = d.cumInterest;
+        const negFees = -d.cumFees;
+
+        const hPrin = principal * scale;
+        const hInt  = interest  * scale;
+        const hFees = Math.abs(negFees) * scale;
+
+        const yInt  = yZero - hInt;
+        const yPrin = yZero - hInt - hPrin;
+        const yFee  = yZero;
+
+        const barWidth = Math.max(2, barW-4);
+
+        const rPrin = document.createElementNS(svgNS,"rect");
+        rPrin.setAttribute("x", x+2);
+        rPrin.setAttribute("y", yPrin);
+        rPrin.setAttribute("width", barWidth);
+        rPrin.setAttribute("height", hPrin);
+        rPrin.setAttribute("fill","#0ea5e9");
+        prepareStackedBar(rPrin, stackedGroupId, 0, true);
+
+        const rInt = document.createElementNS(svgNS,"rect");
+        rInt.setAttribute("x", x+2);
+        rInt.setAttribute("y", yInt);
+        rInt.setAttribute("width", barWidth);
+        rInt.setAttribute("height", hInt);
+        rInt.setAttribute("fill","#22c55e");
+        prepareStackedBar(rInt, stackedGroupId, 1, true);
+
+        const rFee = document.createElementNS(svgNS,"rect");
+        rFee.setAttribute("x", x+2);
+        rFee.setAttribute("y", yFee);
+        rFee.setAttribute("width", barWidth);
+        rFee.setAttribute("height", hFees);
+        rFee.setAttribute("fill","#ef4444");
+        prepareStackedBar(rFee, stackedGroupId, 2, false);
+
+        svg.appendChild(rPrin);
+        svg.appendChild(rInt);
+        svg.appendChild(rFee);
+
+        if((d.monthIndex % 12) === 0 || d.monthIndex === 1){
+          const lbl = document.createElementNS(svgNS,"text");
+          lbl.textContent = "M"+d.monthIndex;
+          lbl.setAttribute("x", x+barWidth/2);
+          lbl.setAttribute("y", h-padB+16);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","middle");
+          svg.appendChild(lbl);
+        }
+      });
+
+      const currentX = padL + (CURRENT_MONTH - 1) * barW;
+      const vline = document.createElementNS(svgNS, "line");
+      vline.setAttribute("x1", currentX);
+      vline.setAttribute("x2", currentX);
+      vline.setAttribute("y1", 0);
+      vline.setAttribute("y2", h);
+      vline.setAttribute("stroke", "#64748b");
+      vline.setAttribute("stroke-dasharray", "4,3");
+      vline.setAttribute("stroke-width", "1");
+      svg.appendChild(vline);
+
+      containerEl.appendChild(svg);
+    }
+
+    // --------------------------
+    // Render KPI tiles
+    // --------------------------
+    const kpisEl = document.getElementById("kpis");
+    kpisEl.innerHTML = `
+      <div class="kpi" data-kpi="netToDate">
+        <h3>Total Net Earnings to Date</h3>
+        <p id="kpiNetToDate">$${kpis.totalNetToDate.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+      </div>
+      <div class="kpi" data-kpi="projected">
+        <h3>Projected Lifetime Earnings</h3>
+        <p id="kpiNetProj">$${kpis.totalNetProjected.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+      </div>
+      <div class="kpi" data-kpi="avgMonthly">
+        <h3>Average Monthly Earnings</h3>
+        <p id="kpiAvgMonth">$${kpis.avgMonthlyEarnings.toFixed(2)}</p>
+      </div>
+      <div class="kpi" data-kpi="fees">
+        <h3>Total Fees to Date</h3>
+        <p id="kpiFees">$${kpis.totalFeesToDate.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+      </div>
+    `;
+
+    // --------------------------
+    // KPI drawers (shared drawer)
+    // --------------------------
+    function resetDrawerContent(){
+      drawerChartArea.innerHTML = "";
+      drawerExtra.innerHTML = "";
+    }
+
+    function openDrawerBase(){
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden","false");
+      drawer.scrollTop = 0;
+    }
+
+    function openKpi1(){
+      currentLoan = null;
+      drawerTitle.textContent = "Total Net Earnings to Date";
+      drawerSub.textContent = "Portfolio-level earnings across all loans.";
+      drawerPrimaryTitle.textContent = "Net Earnings to Date";
+      drawerPrimary.textContent = `$${kpis.totalNetToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Fees to Date";
+      drawerSecondary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      resetDrawerContent();
+      renderKPI1Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI1Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi2(){
+      currentLoan = null;
+      drawerTitle.textContent = "Projected Lifetime Earnings";
+      drawerSub.textContent = "Net earnings at maturity for all loans.";
+      drawerPrimaryTitle.textContent = "Projected Lifetime Net";
+      drawerPrimary.textContent = `$${kpis.totalNetProjected.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Principal";
+      drawerSecondary.textContent = `$${totalPrincipal.toLocaleString()}`;
+      resetDrawerContent();
+      renderKPI2Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI2Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi3(){
+      currentLoan = null;
+      drawerTitle.textContent = "Average Monthly Earnings";
+      drawerSub.textContent = `Based on net earnings through month ${CURRENT_MONTH}.`;
+      drawerPrimaryTitle.textContent = "Avg Monthly Earnings";
+      drawerPrimary.textContent = `$${kpis.avgMonthlyEarnings.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Months Counted";
+      drawerSecondary.textContent = `${CURRENT_MONTH} months`;
+      resetDrawerContent();
+      renderKPI3Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI3Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi4(){
+      currentLoan = null;
+      drawerTitle.textContent = "Total Fees to Date";
+      drawerSub.textContent = "Cumulative monthly fees across all loans.";
+      drawerPrimaryTitle.textContent = "Total Fees";
+      drawerPrimary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Loans";
+      drawerSecondary.textContent = `${loans.length}`;
+      resetDrawerContent();
+      renderKPI4Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI4Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    // --------------------------
+    // Loan tiles
+    // --------------------------
+    const grid = document.getElementById("loanGrid");
+    const drawer = document.getElementById("drawer");
+    const drawerTitle = document.getElementById("drawerTitle");
+    const drawerSub = document.getElementById("drawerSub");
+    const drawerPrimaryTitle = document.getElementById("drawerPrimaryTitle");
+    const drawerPrimary = document.getElementById("drawerPrimary");
+    const drawerSecondaryTitle = document.getElementById("drawerSecondaryTitle");
+    const drawerSecondary = document.getElementById("drawerSecondary");
+    const drawerChartArea = document.getElementById("drawerChartArea");
+    const drawerExtra = document.getElementById("drawerExtra");
+
+    let currentLoan = null;
+
+    loansWithEarnings.forEach(loan => {
+      const lastIdx = loan.earningsSchedule.length - 1;
+      const atCurrent = loan.earningsSchedule[Math.min(CURRENT_MONTH-1, lastIdx)] || loan.earningsSchedule[lastIdx];
+
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.setAttribute("tabindex","0");
+      tile.innerHTML = `
+        <div class="tile-left">
+          <div class="loan-name">Loan ${loan.id}</div>
+          <div class="loan-sub">$${loan.purchasePrice.toLocaleString()}</div>
+          <div class="loan-meta">
+            <div>Term: ${loan.termYears}y</div>
+            <div>Grace: ${loan.graceYears}y</div>
+            <div>Fee: $${loan.feePerMonth.toFixed(2)}/mo</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="mini-label">
+            Net Earnings M${CURRENT_MONTH}: $${atCurrent.netEarnings.toFixed(0)}
+          </div>
+          <div class="mini-chart"></div>
+        </div>
+      `;
+
+      tile.addEventListener("click", e => {
+        e.stopPropagation();
+        openLoanDrawer(loan);
+      });
+      tile.addEventListener("keydown", e => {
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          openLoanDrawer(loan);
+        }
+      });
+
+      grid.appendChild(tile);
+
+      const miniChartContainer = tile.querySelector(".mini-chart");
+      createMiniStackedEarningsSVG(miniChartContainer, loan.earningsSchedule);
+    });
+
+    // --------------------------
+    // Drawer behavior
+    // --------------------------
+    document.getElementById("closeBtn").addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", e => {
+      if(e.key === "Escape") closeDrawer();
+    });
+    document.addEventListener("click", e => {
+      if(drawer.classList.contains("open")){
+        const inside = drawer.contains(e.target);
+        const tileClicked = e.target.closest(".tile");
+        const kpiClicked = e.target.closest(".kpi");
+        if(!inside && !tileClicked && !kpiClicked){
+          closeDrawer();
+        }
+      }
+    });
+
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden","true");
+      currentLoan = null;
+    }
+
+    function openLoanDrawer(loan){
+      currentLoan = loan;
+      resetDrawerContent();
+      const lastIdx = loan.earningsSchedule.length - 1;
+      const atCurrent = loan.earningsSchedule[Math.min(CURRENT_MONTH-1, lastIdx)] || loan.earningsSchedule[lastIdx];
+      const atEnd = loan.earningsSchedule[lastIdx];
+
+      drawerTitle.textContent = `Loan ${loan.id} — Earnings`;
+      drawerSub.textContent = `Purchase: ${loan.purchaseDate} • Principal $${loan.purchasePrice.toLocaleString()}`;
+      drawerPrimaryTitle.textContent = "Net Earnings to Date";
+      drawerPrimary.textContent = `$${atCurrent.netEarnings.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Fees to Date";
+      drawerSecondary.textContent = `$${atCurrent.cumFees.toFixed(2)}`;
+
+      createDrawerStackedChart(drawerChartArea, loan.earningsSchedule);
+
+      // table
+      let rowsHtml = "";
+      loan.earningsSchedule.forEach(r => {
+        rowsHtml += `
+          <tr>
+            <td>${r.monthIndex}</td>
+            <td>$${r.cumPrincipal.toFixed(2)}</td>
+            <td>$${r.cumInterest.toFixed(2)}</td>
+            <td>-$${r.cumFees.toFixed(2)}</td>
+            <td>$${r.netEarnings.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      drawerExtra.innerHTML = `
+        <h3 style="margin-top:12px;margin-bottom:8px;">Earnings Breakdown by Month</h3>
+        <div class="amort-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Cumulative Principal</th>
+                <th>Cumulative Interest</th>
+                <th>Cumulative Fees</th>
+                <th>Net Earnings</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+      openDrawerBase();
+    }
+
+    // --------------------------
+    // KPI click wiring
+    // --------------------------
+    const kpiOpeners = {
+      netToDate:openKpi1,
+      projected:openKpi2,
+      avgMonthly:openKpi3,
+      fees:openKpi4
+    };
+
+    document.querySelectorAll(".kpi").forEach(k => {
+      k.addEventListener("click", () => {
+        const key = k.getAttribute("data-kpi");
+        if(kpiOpeners[key]){
+          kpiOpeners[key]();
+        }
+      });
+    });
+
+    // --------------------------
+    // Theme toggle
+    // --------------------------
+    const themeToggleBtn = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    function setTheme(mode){
+      root.setAttribute("data-theme", mode);
+      if(mode === "dark"){
+        themeToggleBtn.textContent = "☀️";
+      } else {
+        themeToggleBtn.textContent = "🌙";
+      }
+      try { localStorage.setItem("earningsTheme", mode); } catch(e){}
+    }
+
+    const stored = (()=>{ try { return localStorage.getItem("earningsTheme"); } catch(e){ return null; }})();
+    if(stored === "dark" || (!stored && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)){
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      setTheme(current === "dark" ? "light" : "dark");
+    });
+
+    // ======================
+    // KPI CHART RENDERERS
+    // ======================
+    const loanColors = ["#0ea5e9", "#22c55e", "#7c3aed", "#14b8a6", "#f59e0b", "#ef4444", "#6366f1", "#a855f7", "#f97316", "#06b6d4"];
+
+    function buildKpiStackedChart(containerId, data, valueGetter, showCurrentLine = true){
+      const container = document.getElementById(containerId);
+      if(!container) return;
+      container.innerHTML = "";
+
+      const svgNS = "http://www.w3.org/2000/svg";
+      const rect = container.getBoundingClientRect();
+      const w = Math.max(360, rect.width || 700);
+      const h = 260;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
+
+      const maxMonths = Math.max(CURRENT_MONTH, ...data.map(l => l.earningsSchedule.length));
+      const months = Array.from({length:maxMonths}, (_,i) => {
+        const month = i+1;
+        const contributions = data.map(loan => {
+          const row = loan.earningsSchedule[Math.min(i, loan.earningsSchedule.length-1)];
+          const value = valueGetter(row || {}, month, loan);
+          return {
+            loanId: loan.id,
+            value,
+            color: loanColors[(loan.id - 1) % loanColors.length]
+          };
+        });
+        const posTotal = contributions.reduce((sum,c) => c.value > 0 ? sum + c.value : sum, 0);
+        const negTotal = contributions.reduce((sum,c) => c.value < 0 ? sum + c.value : sum, 0);
+        return { month, contributions, posTotal, negTotal };
+      });
+
+      let maxValue = 0;
+      let minValue = 0;
+      months.forEach(m => {
+        maxValue = Math.max(maxValue, m.posTotal);
+        minValue = Math.min(minValue, m.negTotal);
+      });
+
+      const yMax = Math.max(maxValue, 1);
+      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
+
+      const count = months.length;
+      const barW = (w - padL - padR) / Math.max(1, count);
+
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("width","100%");
+      svg.setAttribute("height","100%");
+
+      const gridBelowZero = 2;
+      const gridAboveZero = 4;
+
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
+
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
+
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / gridAboveZero) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
+      }
+
+      const axis = document.createElementNS(svgNS,"line");
+      axis.setAttribute("x1",padL);
+      axis.setAttribute("x2",w-padR);
+      axis.setAttribute("y1",yZero);
+      axis.setAttribute("y2",yZero);
+      axis.setAttribute("stroke","#94a3b8");
+      axis.setAttribute("stroke-width","1");
+      svg.appendChild(axis);
+
+      months.forEach((m, idx) => {
+        const stackedGroupId = `stack-kpi-${m.month}`;
+        const x = padL + idx*barW;
+        let yPos = yZero;
+        let yNeg = yZero;
+        const barWidth = Math.max(2, barW-4);
+
+        m.contributions.forEach((c, loanIndex) => {
+          const hVal = Math.abs(c.value) * scale;
+          if(hVal <= 0) return;
+
+          const r = document.createElementNS(svgNS,"rect");
+          r.setAttribute("x", x+2);
+          r.setAttribute("width", barWidth);
+          r.setAttribute("fill", c.color);
+          prepareStackedBar(r, stackedGroupId, loanIndex, c.value >= 0);
+
+          if(c.value >= 0){
+            yPos -= hVal;
+            r.setAttribute("y", yPos);
+            r.setAttribute("height", hVal);
+          } else {
+            r.setAttribute("y", yNeg);
+            r.setAttribute("height", hVal);
+            yNeg += hVal;
+          }
+
+          svg.appendChild(r);
+        });
+
+        if((m.month % 12) === 0 || m.month === 1){
+          const lbl = document.createElementNS(svgNS,"text");
+          lbl.textContent = "M"+m.month;
+          lbl.setAttribute("x", x+barWidth/2);
+          lbl.setAttribute("y", h-padB+16);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","middle");
+          svg.appendChild(lbl);
+        }
+      });
+
       if(showCurrentLine){
         const currentX = padL + (CURRENT_MONTH - 1) * barW;
         const vline = document.createElementNS(svgNS, "line");
@@ -821,50 +1292,15 @@
         svg.appendChild(vline);
       }
 
-      function findContributionAtPoint(month, cy){
-        const valueAtY = (yZero - cy) / scale;
-        const positives = month.contributions.filter(c => c.value > 0);
-        const negatives = month.contributions.filter(c => c.value < 0);
-        const pool = valueAtY >= 0 ? positives : negatives;
-
-        let cumulative = 0;
-        for(const c of pool){
-          const next = cumulative + c.value;
-          if(valueAtY >= Math.min(cumulative, next) && valueAtY <= Math.max(cumulative, next)){
-            return c;
-          }
-          cumulative = next;
-        }
-        return null;
-      }
-
-      function handleMouseMove(ev){
-        const rectSvg = svg.getBoundingClientRect();
-        const cx = ev.clientX - rectSvg.left;
-        const cy = ev.clientY - rectSvg.top;
-
-        if(cx < padL || cx > w - padR || cy < padT || cy > h - padB){
-          return;
-        }
+      container.appendChild(svg);
+    }
 
 
-        const monthIdx = Math.max(0, Math.min(months.length - 1, Math.floor((cx - padL) / barW)));
-        const month = months[monthIdx];
-        const contribution = findContributionAtPoint(month, cy);
-
-        if(!contribution){
-          return;
-        }
-
-        const tooltipX = tipXRight + 140 > w ? tipXLeft : tipXRight;
-
-          loanLabel: `Loan ${contribution.loanId}`,
-          month: month.month,
-          value: contribution.value,
-          total: month.posTotal + month.negTotal
-        });
-      }
-
+    function renderKPI1Chart(data, containerId = "kpi1Chart"){
+      const limitedData = data.map(loan => ({
+        ...loan,
+        earningsSchedule: loan.earningsSchedule.slice(0, 18)
+      }));
       buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false);
     }
     function renderKPI2Chart(data, containerId = "kpi2Chart"){
