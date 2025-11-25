@@ -602,8 +602,12 @@
         hideSmallLensTooltip();
       }
 
-      svg.addEventListener("mousemove", move);
-      svg.addEventListener("mouseleave", leave);
+      if (!svg || !svg.getBoundingClientRect) return;
+
+      const target = svg; // force listener on the actual SVG element
+
+      target.addEventListener("mousemove", move);
+      target.addEventListener("mouseleave", leave);
     }
 
     function updateSmallLensTooltip(e, svg, bars, localX, localY) {
