@@ -518,6 +518,76 @@
       bar.setAttribute("data-stack-index", index);
     }
 
+    function createSmallHoverLens(svg, bars, radius = 40) {
+      const svgNS = "http://www.w3.org/2000/svg";
+
+      // Container for lens overlay
+      const lensLayer = document.createElementNS(svgNS, "g");
+      lensLayer.setAttribute("class", "small-hover-lens");
+      lensLayer.style.display = "none";
+      svg.appendChild(lensLayer);
+
+      // Circle that defines the lens boundary
+      const lensCircle = document.createElementNS(svgNS, "circle");
+      lensCircle.setAttribute("r", radius);
+      lensCircle.setAttribute("fill", "none");
+      lensCircle.setAttribute("stroke", "#4aa4ff");
+      lensCircle.setAttribute("stroke-width", "1.5");
+      lensLayer.appendChild(lensCircle);
+
+      // ClipPath to restrict zoomed content inside the circle
+      const clipId = "small-lens-clip-" + Math.random().toString(36).slice(2);
+      const clip = document.createElementNS(svgNS, "clipPath");
+      clip.setAttribute("id", clipId);
+
+      const clipCircle = document.createElementNS(svgNS, "circle");
+      clipCircle.setAttribute("r", radius);
+      clip.appendChild(clipCircle);
+      svg.appendChild(clip);
+
+      // Group containing cloned bars (magnified)
+      const lensContent = document.createElementNS(svgNS, "g");
+      lensContent.setAttribute("clip-path", `url(#${clipId})`);
+      lensLayer.appendChild(lensContent);
+
+      // Clone original bars into lensContent (NO per-bar scaling)
+      bars.forEach(bar => {
+        const clone = bar.cloneNode(true);
+        clone.removeAttribute("transform");
+        lensContent.appendChild(clone);
+      });
+
+      const zoom = 1.6;
+
+      function move(e) {
+        const svgRect = svg.getBoundingClientRect();
+        const localX = e.clientX - svgRect.left;
+        const localY = e.clientY - svgRect.top;
+
+        const offsetX = -(localX * (zoom - 1)) + radius;
+        const offsetY = -(localY * (zoom - 1)) + radius;
+
+        lensContent.setAttribute(
+          "transform",
+          `translate(${offsetX}, ${offsetY}) scale(${zoom})`
+        );
+
+        lensCircle.setAttribute("cx", localX);
+        lensCircle.setAttribute("cy", localY);
+        clipCircle.setAttribute("cx", localX);
+        clipCircle.setAttribute("cy", localY);
+
+        lensLayer.style.display = "block";
+      }
+
+      function leave() {
+        lensLayer.style.display = "none";
+      }
+
+      svg.addEventListener("mousemove", move);
+      svg.addEventListener("mouseleave", leave);
+    }
+
     function createHoverLens(svg, bars, radius = 80){
       const svgNS = "http://www.w3.org/2000/svg";
       const lensLayer = document.createElementNS(svgNS, "g");
@@ -725,6 +795,7 @@
       svg.setAttribute("height","48");
 
       const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+      const bars = [];
 
       // zero axis
       const axis = document.createElementNS(svgNS,"line");
@@ -783,7 +854,11 @@
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
         svg.appendChild(rFee);
+
+        bars.push(rPrin, rInt, rFee);
       });
+
+      createSmallHoverLens(svg, bars);
 
       // vertical dotted current-month marker
       const currentX = padL + (CURRENT_MONTH - 1) * barW;
