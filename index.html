@@ -1,86 +1,4 @@
-      let lensInstance = null;
-      let tooltipInstance = null;
-      const lensRadius = 40;
-      const lensScale = 1.5;
-
-      function handleMove(e){
-        const rect = svg.getBoundingClientRect();
-        const mouseX = ((e.clientX - rect.left) / rect.width) * w;
-        const mouseY = ((e.clientY - rect.top) / rect.height) * h;
-        const x = Math.max(lensRadius, Math.min(w - lensRadius, mouseX));
-        const y = Math.max(lensRadius, Math.min(h - lensRadius, mouseY));
-
-        if(!lensInstance){
-          lensInstance = createLens(svg, lensRadius, lensScale);
-          const barClones = Array.from(svg.querySelectorAll("rect"))
-            .filter(r => r.__value !== undefined || r.getAttribute("fill"));
-          barClones.forEach(r => lensInstance.content.appendChild(r.cloneNode(true)));
-          svg.appendChild(lensInstance.group);
-        }
-
-        if(!tooltipInstance){
-          tooltipInstance = createTooltip(svg, true);
-        }
-
-        updateLens(lensInstance, x, y);
-
-        const idx = Math.max(0, Math.min(months.length - 1, Math.floor((x - padL) / barW)));
-        const monthRow = months[idx];
-        const month = monthRow.month;
-
-        const aggregates = data.reduce((acc, loan) => {
-          const row = loan.earningsSchedule[Math.min(idx, loan.earningsSchedule.length-1)] || {};
-          acc.principal += row.cumPrincipal || 0;
-          acc.interest += row.cumInterest || 0;
-          acc.fees += row.cumFees || 0;
-          acc.net += row.netEarnings || 0;
-          return acc;
-        }, {principal:0, interest:0, fees:0, net:0});
-
-        let tooltipLines = [];
-        if(containerId === "kpi1Chart"){ // Net earnings to date
-          tooltipLines = [
-            `Month M${month}`,
-            `Net: $${aggregates.net.toFixed(2)}`,
-            `Principal: $${aggregates.principal.toFixed(2)}`,
-            `Interest: $${aggregates.interest.toFixed(2)}`,
-            `Fees: -$${aggregates.fees.toFixed(2)}`
-          ];
-        } else if(containerId === "kpi2Chart"){ // Projected lifetime
-          tooltipLines = [
-            `Month M${month}`,
-            `Projected Net: $${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
-          ];
-        } else if(containerId === "kpi3Chart"){ // Average monthly
-          const avg = month > 0 ? aggregates.net / month : 0;
-          tooltipLines = [
-            `Month M${month}`,
-            `Avg / Month: $${avg.toFixed(2)}`,
-            `Net to Date: $${aggregates.net.toFixed(2)}`
-          ];
-        } else if(containerId === "kpi4Chart"){ // Fees
-          tooltipLines = [
-            `Month M${month}`,
-            `Fees: -$${aggregates.fees.toFixed(2)}`,
-            `Net: $${aggregates.net.toFixed(2)}`
-          ];
-        }
-
-        updateTooltipContent(tooltipInstance, tooltipLines, true);
-        updateTooltipPosition(tooltipInstance, x, y, lensRadius);
-      }
-
-      function handleLeave(){
-        removeLens(svg, lensInstance);
-        lensInstance = null;
-        if(tooltipInstance){
-          tooltipInstance.group.remove();
-          tooltipInstance = null;
-        }
-      }
-
-      svg.addEventListener("mousemove", handleMove);
-      svg.addEventListener("mouseleave", handleLeave);<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -1785,18 +1703,31 @@
       if(!tooltip) return;
       const width = tooltip.width || 0;
       const height = tooltip.height || 0;
-      let posX = cx + radius * 0.3;
-      let posY = cy - radius * 0.3;
 
-      const minX = cx - radius + 4;
-      const maxX = cx + radius - width - 4;
-      const minY = cy - radius + 4;
-      const maxY = cy + radius - height - 4;
+      let dx = radius * 0.30;
+      let dy = -radius * 0.30;
 
-      posX = Math.max(minX, Math.min(maxX, posX));
-      posY = Math.max(minY, Math.min(maxY, posY));
+      let tooltipX = cx + dx;
+      let tooltipY = cy + dy;
 
-      tooltip.group.setAttribute("transform", `translate(${posX}, ${posY})`);
+      const limit = radius * 0.85;
+      const corners = [
+        {x: tooltipX, y: tooltipY},
+        {x: tooltipX + width, y: tooltipY},
+        {x: tooltipX, y: tooltipY + height},
+        {x: tooltipX + width, y: tooltipY + height}
+      ];
+
+      const maxDistance = Math.max(...corners.map(c => Math.hypot(c.x - cx, c.y - cy)));
+      if(maxDistance >= limit && maxDistance > 0){
+        const scale = limit / maxDistance;
+        dx *= scale;
+        dy *= scale;
+        tooltipX = cx + dx;
+        tooltipY = cy + dy;
+      }
+
+      tooltip.group.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
     }
 
     // Shared drawer behavior handled above for both KPI and loan content.
