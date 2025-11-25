@@ -312,20 +312,6 @@
   </style>
 </head>
 <body>
-  <div id="globalLensOverlay"
-     style="
-       position:absolute;
-       top:0;
-       left:0;
-       width:100%;
-       height:100%;
-       pointer-events:none;
-       z-index:99999;
-     ">
-    <svg id="globalLensSVG"
-         style="position:absolute; top:0; left:0; overflow:visible; pointer-events:none; z-index:99999;">
-    </svg>
-  </div>
   <div class="app" role="main">
     <header>
       <div class="header-top">
@@ -510,20 +496,6 @@
     const CURRENT_MONTH = 18; // keep in sync with ROI page if you want
     document.getElementById("currentMonthLabel").textContent = CURRENT_MONTH;
 
-    const globalSVG = document.getElementById("globalLensSVG");
-
-    function resizeGlobalLensSVG() {
-      if (!globalSVG) return;
-      const w = window.innerWidth || document.documentElement.clientWidth || 1200;
-      const h = window.innerHeight || document.documentElement.clientHeight || 800;
-      globalSVG.setAttribute("width", w);
-      globalSVG.setAttribute("height", h);
-      globalSVG.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    }
-
-    resizeGlobalLensSVG();
-    window.addEventListener("resize", resizeGlobalLensSVG);
-
     // Loan metadata: same as ROI, with feePerMonth added.
     // TODO: Update feePerMonth values from Earnings.xlsx N1:T11 (col T).
     const loans = [
@@ -544,125 +516,6 @@
     function prepareStackedBar(bar, groupId, index, isPositive = true){
       bar.setAttribute("data-stack-group", groupId);
       bar.setAttribute("data-stack-index", index);
-    }
-
-    function createSmallHoverLens(svg, bars, radius = 28) {
-      const svgNS = "http://www.w3.org/2000/svg";
-
-      if (!globalSVG) return;
-      while (globalSVG.firstChild) globalSVG.removeChild(globalSVG.firstChild);
-
-      // Lens circle
-      const lensCircle = document.createElementNS(svgNS, "circle");
-      lensCircle.setAttribute("r", radius);
-      lensCircle.setAttribute("fill", "none");
-      lensCircle.setAttribute("stroke", "#4aa4ff");
-      lensCircle.setAttribute("stroke-width", "1.5");
-      globalSVG.appendChild(lensCircle);
-
-      // Clip path
-      const clipId = "small-lens-clip-" + Math.random().toString(36).slice(2);
-      const clipPath = document.createElementNS(svgNS, "clipPath");
-      clipPath.setAttribute("id", clipId);
-
-      const clipCircle = document.createElementNS(svgNS, "circle");
-      clipCircle.setAttribute("r", radius);
-      clipPath.appendChild(clipCircle);
-      globalSVG.appendChild(clipPath);
-
-      // Magnified content container
-      const lensContent = document.createElementNS(svgNS, "g");
-      lensContent.setAttribute("clip-path", `url(#${clipId})`);
-      globalSVG.appendChild(lensContent);
-
-      // Clone bars (NO per-bar transform)
-      bars.forEach(bar => {
-        const clone = bar.cloneNode(true);
-        clone.removeAttribute("transform");
-        lensContent.appendChild(clone);
-      });
-
-      const zoom = 3;
-
-      function move(e) {
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-        const localX = svgPt.x;
-        const localY = svgPt.y;
-
-        const offsetX = -(localX * (zoom - 1)) + localX - radius;
-        const offsetY = -(localY * (zoom - 1)) + localY - radius;
-
-        lensContent.setAttribute(
-          "transform",
-          `translate(${offsetX}, ${offsetY}) scale(${zoom})`
-        );
-
-        lensCircle.setAttribute("cx", e.clientX);
-        lensCircle.setAttribute("cy", e.clientY);
-        clipCircle.setAttribute("cx", e.clientX);
-        clipCircle.setAttribute("cy", e.clientY);
-
-        globalSVG.style.display = "block";
-
-        // --- Tooltip callout ---
-        updateSmallLensTooltip(e, svg, bars, localX, localY);
-      }
-
-      function leave() {
-        globalSVG.style.display = "none";
-        hideSmallLensTooltip();
-      }
-
-      if (!svg || !svg.getBoundingClientRect) return;
-
-      const target = svg; // force listener on the actual SVG element
-
-      target.addEventListener("mousemove", move);
-      target.addEventListener("mouseleave", leave);
-    }
-
-    function updateSmallLensTooltip(e, svg, bars, localX, localY) {
-      let tooltip = document.getElementById("smallLensTooltip");
-      if (!tooltip) {
-        tooltip = document.createElement("div");
-        tooltip.id = "smallLensTooltip";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "100000";
-        tooltip.style.pointerEvents = "none";
-        tooltip.style.background = "white";
-        tooltip.style.border = "1px solid #ccc";
-        tooltip.style.borderRadius = "6px";
-        tooltip.style.padding = "6px 10px";
-        tooltip.style.fontSize = "12px";
-        document.body.appendChild(tooltip);
-      }
-
-      const svgRect = svg.getBoundingClientRect();
-      tooltip.style.left = (e.clientX + 15) + "px";
-      tooltip.style.top = (e.clientY - 20) + "px";
-
-      // Determine which bar is under the lens center
-      const bar = bars.find(b => {
-        const x = parseFloat(b.getAttribute("x"));
-        const w = parseFloat(b.getAttribute("width"));
-        return localX >= x && localX <= x + w;
-      });
-
-      if (bar) {
-        const value = bar.__value || "";
-        tooltip.innerHTML = `Value: ${value}`;
-        tooltip.style.display = "block";
-      } else {
-        tooltip.style.display = "none";
-      }
-    }
-
-    function hideSmallLensTooltip() {
-      const tooltip = document.getElementById("smallLensTooltip");
-      if (tooltip) tooltip.style.display = "none";
     }
 
     function createHoverLens(svg, bars, radius = 80){
@@ -938,7 +791,26 @@
         bars.push(rPrin, rInt, rFee);
       });
 
-      createSmallHoverLens(svg, bars);
+      const lens = createHoverLens(svg, bars, 32);
+
+      svg.addEventListener("mousemove", ev => {
+        const rectSvg = svg.getBoundingClientRect();
+        const cx = ev.clientX - rectSvg.left;
+        const cy = ev.clientY - rectSvg.top;
+
+        // keep lens only within the chart area
+        if (cx < padL || cx > w - padR || cy < padT || cy > h - padB) {
+          lens.hide();
+          return;
+        }
+
+        // createHoverLens expects window coords, so pass ev.clientX/ev.clientY
+        lens.move(ev.clientX, ev.clientY);
+      });
+
+      svg.addEventListener("mouseleave", () => {
+        lens.hide();
+      });
 
       // vertical dotted current-month marker
       const currentX = padL + (CURRENT_MONTH - 1) * barW;
