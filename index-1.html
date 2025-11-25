@@ -212,6 +212,11 @@
       gap:8px;
       margin-bottom:12px;
     }
+    .drawer-subtitle{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
     .drawer-chart{
       width:100%;
       height:260px;
@@ -243,6 +248,9 @@
     .info-card.small{ width:160px; align-items:flex-end; }
     .muted-small{ font-size:12px; color:var(--muted); margin-bottom:6px; }
     .main-val{ font-weight:800; font-size:18px; }
+    .drawer-body{ display:flex; flex-direction:column; gap:12px; }
+    .drawer-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+    .drawer-actions .spacer{ flex:1; }
 
     .amort-wrap{
       border:1px solid rgba(15,23,42,0.06);
@@ -271,20 +279,6 @@
     }
     td:first-child, th:first-child{ text-align:left; }
 
-    .tooltip{
-      position:fixed;
-      pointer-events:none;
-      background:#0f172a;
-      color:white;
-      padding:6px 8px;
-      border-radius:6px;
-      font-size:12px;
-      transform:translate(-50%,-120%);
-      box-shadow:0 6px 18px rgba(2,6,23,0.2);
-      display:none;
-      z-index:9999;
-      line-height:1.12;
-    }
     .small{ font-size:12px; color:var(--muted); }
 
     @media(max-width:760px){
@@ -356,7 +350,130 @@
     </div>
   </aside>
 
-  <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+  <!-- KPI Drawers -->
+  <aside id="kpiDrawer1" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi1Title">KPI 1</h2>
+        <div id="kpi1Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer1" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi1PrimaryTitle"></div>
+        <div id="kpi1Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi1SecondaryTitle"></div>
+        <div id="kpi1Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi1Chart"></div>
+      <div class="amort-wrap" id="kpi1Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer1">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer2" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi2Title">KPI 2</h2>
+        <div id="kpi2Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer2" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi2PrimaryTitle"></div>
+        <div id="kpi2Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi2SecondaryTitle"></div>
+        <div id="kpi2Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi2Chart"></div>
+      <div class="amort-wrap" id="kpi2Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer2">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer3" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi3Title">KPI 3</h2>
+        <div id="kpi3Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer3" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi3PrimaryTitle"></div>
+        <div id="kpi3Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi3SecondaryTitle"></div>
+        <div id="kpi3Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi3Chart"></div>
+      <div class="amort-wrap" id="kpi3Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer3">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
+
+  <aside id="kpiDrawer4" class="drawer kpi-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="kpi4Title">KPI 4</h2>
+        <div id="kpi4Sub" class="drawer-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="close-btn kpi-close" data-kpi-close="kpiDrawer4" aria-label="Close KPI drawer">✕</button>
+      </div>
+    </div>
+    <div class="drawer-info-row">
+      <div class="info-card">
+        <div class="muted-small" id="kpi4PrimaryTitle"></div>
+        <div id="kpi4Primary" class="main-val"></div>
+      </div>
+      <div class="info-card small">
+        <div class="muted-small" id="kpi4SecondaryTitle"></div>
+        <div id="kpi4Secondary" class="main-val small"></div>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-chart" id="kpi4Chart"></div>
+      <div class="amort-wrap" id="kpi4Table"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn" data-kpi-close="kpiDrawer4">Close</button>
+      <div class="spacer"></div>
+      <button class="btn primary">Export</button>
+    </div>
+  </aside>
 
   <script>
     // --------------------------
@@ -379,6 +496,13 @@
       { id:9,  purchaseDate:'2025-02-01', purchasePrice:10000, termYears:7,  graceYears:0.25, nominalRate:0.1000, feePerMonth:3.00 },
       { id:10, purchaseDate:'2025-03-01', purchasePrice:8000,  termYears:3,  graceYears:0.00, nominalRate:0.0600, feePerMonth:3.00 }
     ];
+
+    let stackedBarGroupCounter = 0;
+
+    function prepareStackedBar(bar, groupId, index, isPositive = true){
+      bar.setAttribute("data-stack-group", groupId);
+      bar.setAttribute("data-stack-index", index);
+    }
 
     // --------------------------
     // Amortization + earnings
@@ -479,7 +603,12 @@
     }
 
     const kpis = computeEarningsKPIs(loansWithEarnings);
+    const totalPrincipal = loans.reduce((s,l)=>s+l.purchasePrice,0);
 
+    // --------------------------
+    // Mini stacked earnings chart (per tile)
+    // --------------------------
+    
     // --------------------------
     // Mini stacked earnings chart (per tile)
     // --------------------------
@@ -490,13 +619,12 @@
       const h = 48;
       const padL = 4, padR = 4, padT = 4, padB = 4;
 
-      const data = earningsSchedule; // full life of loan
+      const data = earningsSchedule;
 
-      // compute pos/neg ranges
       let maxAbs = 0;
       data.forEach(d => {
         const pos = d.cumPrincipal + d.cumInterest;
-        const neg = -d.cumFees; // negative
+        const neg = -d.cumFees;
         maxAbs = Math.max(maxAbs, pos, Math.abs(neg));
       });
       if(maxAbs <= 0) maxAbs = 1;
@@ -513,7 +641,8 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","48");
 
-      // zero axis
+      const stackedGroupId = `stack-${stackedBarGroupCounter++}`;
+
       const axis = document.createElementNS(svgNS,"line");
       axis.setAttribute("x1",padL);
       axis.setAttribute("x2",w-padR);
@@ -528,51 +657,70 @@
 
         const principal = d.cumPrincipal;
         const interest = d.cumInterest;
-        const fees = d.cumFees; // positive number, draw negative
-
-        const posTotal = principal + interest;
-        const negTotal = fees;
+        const negFees = -d.cumFees;
 
         const hPrin = principal * scale;
         const hInt  = interest  * scale;
-        const hFees = negTotal  * scale;
+        const hFees = Math.abs(negFees) * scale;
 
         const yInt  = yZero - hInt;
         const yPrin = yZero - hInt - hPrin;
         const yFee  = yZero;
 
-        // principal (top)
+        const barWidth = Math.max(1, barW-2);
+
         const rPrin = document.createElementNS(svgNS,"rect");
         rPrin.setAttribute("x", x+1);
         rPrin.setAttribute("y", yPrin);
-        rPrin.setAttribute("width", Math.max(1, barW-2));
+        rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill", "#0ea5e9");
+        rPrin.__value = principal;
+        prepareStackedBar(rPrin, stackedGroupId, 0, true);
 
-        // interest (middle)
         const rInt = document.createElementNS(svgNS,"rect");
         rInt.setAttribute("x", x+1);
         rInt.setAttribute("y", yInt);
-        rInt.setAttribute("width", Math.max(1, barW-2));
+        rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill", "#22c55e");
+        rInt.__value  = interest;
+        prepareStackedBar(rInt, stackedGroupId, 1, true);
 
-        // fees (negative)
         const rFee = document.createElementNS(svgNS,"rect");
         rFee.setAttribute("x", x+1);
         rFee.setAttribute("y", yFee);
-        rFee.setAttribute("width", Math.max(1, barW-2));
+        rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill", "#ef4444");
+        rFee.__value  = negFees;
+        prepareStackedBar(rFee, stackedGroupId, 2, false);
 
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
         svg.appendChild(rFee);
       });
 
+      const currentX = padL + (CURRENT_MONTH - 1) * barW;
+      const vline = document.createElementNS(svgNS, "line");
+      vline.setAttribute("x1", currentX);
+      vline.setAttribute("x2", currentX);
+      vline.setAttribute("y1", 0);
+      vline.setAttribute("y2", h);
+      vline.setAttribute("stroke", "#64748b");
+      vline.setAttribute("stroke-dasharray", "4,3");
+      vline.setAttribute("stroke-width", "1");
+      svg.appendChild(vline);
+
       containerEl.appendChild(svg);
     }
 
+
+
+    // --------------------------
+    // Drawer stacked chart (larger)
+    // --------------------------
+    
     // --------------------------
     // Drawer stacked chart (larger)
     // --------------------------
@@ -582,22 +730,25 @@
       const rect = containerEl.getBoundingClientRect();
       const w = Math.max(360, rect.width || 700);
       const h = 260;
-      const padL = 50, padR = 20, padT = 20, padB = 40;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
 
       const data = earningsSchedule;
 
-      // find extrema
-      let maxAbs = 0;
+      let maxValue = 0;
+      let minValue = 0;
       data.forEach(d => {
         const pos = d.cumPrincipal + d.cumInterest;
         const neg = -d.cumFees;
-        maxAbs = Math.max(maxAbs, pos, Math.abs(neg));
+        maxValue = Math.max(maxValue, pos);
+        minValue = Math.min(minValue, neg);
       });
-      if(maxAbs <= 0) maxAbs = 1;
 
-      const yZero = padT + (h - padT - padB) / 2;
-      const halfHeight = (h - padT - padB) / 2;
-      const scale = halfHeight / maxAbs;
+      const yMax = Math.max(maxValue, 1);
+      const yMin = minValue < -10 ? minValue : -(yMax * 0.10);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
 
       const count = data.length;
       const barW = (w - padL - padR) / Math.max(1, count);
@@ -607,41 +758,34 @@
       svg.setAttribute("width","100%");
       svg.setAttribute("height","100%");
 
-      // grid lines / labels
-      for(let i=0;i<=4;i++){
-        const v = maxAbs * (1 - i/4);
-        const yUp = yZero - v*scale;
-        const yDn = yZero + v*scale;
+      const gridBelowZero = 2;
+      const gridAboveZero = 4;
 
-        const upLine = document.createElementNS(svgNS,"line");
-        upLine.setAttribute("x1",padL);
-        upLine.setAttribute("x2",w-padR);
-        upLine.setAttribute("y1",yUp);
-        upLine.setAttribute("y2",yUp);
-        upLine.setAttribute("stroke","rgba(148,163,184,0.35)");
-        upLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(upLine);
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
 
-        const dnLine = document.createElementNS(svgNS,"line");
-        dnLine.setAttribute("x1",padL);
-        dnLine.setAttribute("x2",w-padR);
-        dnLine.setAttribute("y1",yDn);
-        dnLine.setAttribute("y2",yDn);
-        dnLine.setAttribute("stroke","rgba(148,163,184,0.12)");
-        dnLine.setAttribute("stroke-width","0.7");
-        svg.appendChild(dnLine);
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
 
-        const lbl = document.createElementNS(svgNS,"text");
-        lbl.textContent = "$" + Math.round(v).toLocaleString();
-        lbl.setAttribute("x", padL - 10);
-        lbl.setAttribute("y", yUp + 4);
-        lbl.setAttribute("font-size","11");
-        lbl.setAttribute("fill","var(--text)");
-        lbl.setAttribute("text-anchor","end");
-        svg.appendChild(lbl);
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / gridAboveZero) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
       }
 
-      // zero axis
       const axis = document.createElementNS(svgNS,"line");
       axis.setAttribute("x1",padL);
       axis.setAttribute("x2",w-padR);
@@ -651,21 +795,17 @@
       axis.setAttribute("stroke-width","1");
       svg.appendChild(axis);
 
-      const tooltipEl = document.getElementById("tooltip");
-
-      const hoverG = document.createElementNS(svgNS,"g");
-      svg.appendChild(hoverG);
-
       data.forEach((d, i) => {
+        const stackedGroupId = `stack-drawer-${d.monthIndex || i}`;
         const x = padL + i*barW;
 
         const principal = d.cumPrincipal;
         const interest = d.cumInterest;
-        const fees = d.cumFees;
+        const negFees = -d.cumFees;
 
         const hPrin = principal * scale;
         const hInt  = interest  * scale;
-        const hFees = fees      * scale;
+        const hFees = Math.abs(negFees) * scale;
 
         const yInt  = yZero - hInt;
         const yPrin = yZero - hInt - hPrin;
@@ -679,6 +819,7 @@
         rPrin.setAttribute("width", barWidth);
         rPrin.setAttribute("height", hPrin);
         rPrin.setAttribute("fill","#0ea5e9");
+        prepareStackedBar(rPrin, stackedGroupId, 0, true);
 
         const rInt = document.createElementNS(svgNS,"rect");
         rInt.setAttribute("x", x+2);
@@ -686,6 +827,7 @@
         rInt.setAttribute("width", barWidth);
         rInt.setAttribute("height", hInt);
         rInt.setAttribute("fill","#22c55e");
+        prepareStackedBar(rInt, stackedGroupId, 1, true);
 
         const rFee = document.createElementNS(svgNS,"rect");
         rFee.setAttribute("x", x+2);
@@ -693,57 +835,12 @@
         rFee.setAttribute("width", barWidth);
         rFee.setAttribute("height", hFees);
         rFee.setAttribute("fill","#ef4444");
-
-        // simple hover tooltip
-        [rPrin,rInt,rFee].forEach(el=>{
-          el.addEventListener("mousemove", ev=>{
-            hoverG.innerHTML = "";
-            const rectSvg = svg.getBoundingClientRect();
-            const cx = ev.clientX - rectSvg.left;
-            const cy = ev.clientY - rectSvg.top;
-
-            const tipBg = document.createElementNS(svgNS,"rect");
-            tipBg.setAttribute("x", cx - 70);
-            tipBg.setAttribute("y", cy - 46);
-            tipBg.setAttribute("width", 140);
-            tipBg.setAttribute("height", 40);
-            tipBg.setAttribute("rx", 6);
-            tipBg.setAttribute("fill","black");
-            tipBg.setAttribute("opacity","0.83");
-
-            const tipText1 = document.createElementNS(svgNS,"text");
-            tipText1.setAttribute("x", cx);
-            tipText1.setAttribute("y", cy - 30);
-            tipText1.setAttribute("fill","white");
-            tipText1.setAttribute("font-size","11");
-            tipText1.setAttribute("text-anchor","middle");
-            tipText1.textContent = `M${d.monthIndex} Net: $${d.netEarnings.toFixed(2)}`;
-
-            const tipText2 = document.createElementNS(svgNS,"text");
-            tipText2.setAttribute("x", cx);
-            tipText2.setAttribute("y", cy - 16);
-            tipText2.setAttribute("fill","white");
-            tipText2.setAttribute("font-size","10");
-            tipText2.setAttribute("text-anchor","middle");
-            tipText2.textContent = `P:$${d.cumPrincipal.toFixed(0)} I:$${d.cumInterest.toFixed(0)} F:-$${d.cumFees.toFixed(0)}`;
-
-            hoverG.appendChild(tipBg);
-            hoverG.appendChild(tipText1);
-            hoverG.appendChild(tipText2);
-
-            tooltipEl.style.display = "none"; // using inline tooltip
-          });
-
-          el.addEventListener("mouseleave", ()=>{
-            hoverG.innerHTML = "";
-          });
-        });
+        prepareStackedBar(rFee, stackedGroupId, 2, false);
 
         svg.appendChild(rPrin);
         svg.appendChild(rInt);
         svg.appendChild(rFee);
 
-        // x-axis labels (every 12 months)
         if((d.monthIndex % 12) === 0 || d.monthIndex === 1){
           const lbl = document.createElementNS(svgNS,"text");
           lbl.textContent = "M"+d.monthIndex;
@@ -755,6 +852,17 @@
           svg.appendChild(lbl);
         }
       });
+
+      const currentX = padL + (CURRENT_MONTH - 1) * barW;
+      const vline = document.createElementNS(svgNS, "line");
+      vline.setAttribute("x1", currentX);
+      vline.setAttribute("x2", currentX);
+      vline.setAttribute("y1", 0);
+      vline.setAttribute("y2", h);
+      vline.setAttribute("stroke", "#64748b");
+      vline.setAttribute("stroke-dasharray", "4,3");
+      vline.setAttribute("stroke-width", "1");
+      svg.appendChild(vline);
 
       containerEl.appendChild(svg);
     }
@@ -781,6 +889,80 @@
         <p id="kpiFees">$${kpis.totalFeesToDate.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
       </div>
     `;
+
+    // --------------------------
+    // KPI drawers (shared drawer)
+    // --------------------------
+    function resetDrawerContent(){
+      drawerChartArea.innerHTML = "";
+      drawerExtra.innerHTML = "";
+    }
+
+    function openDrawerBase(){
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden","false");
+      drawer.scrollTop = 0;
+    }
+
+    function openKpi1(){
+      currentLoan = null;
+      drawerTitle.textContent = "Total Net Earnings to Date";
+      drawerSub.textContent = "Portfolio-level earnings across all loans.";
+      drawerPrimaryTitle.textContent = "Net Earnings to Date";
+      drawerPrimary.textContent = `$${kpis.totalNetToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Fees to Date";
+      drawerSecondary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      resetDrawerContent();
+      renderKPI1Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI1Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi2(){
+      currentLoan = null;
+      drawerTitle.textContent = "Projected Lifetime Earnings";
+      drawerSub.textContent = "Net earnings at maturity for all loans.";
+      drawerPrimaryTitle.textContent = "Projected Lifetime Net";
+      drawerPrimary.textContent = `$${kpis.totalNetProjected.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Principal";
+      drawerSecondary.textContent = `$${totalPrincipal.toLocaleString()}`;
+      resetDrawerContent();
+      renderKPI2Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI2Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi3(){
+      currentLoan = null;
+      drawerTitle.textContent = "Average Monthly Earnings";
+      drawerSub.textContent = `Based on net earnings through month ${CURRENT_MONTH}.`;
+      drawerPrimaryTitle.textContent = "Avg Monthly Earnings";
+      drawerPrimary.textContent = `$${kpis.avgMonthlyEarnings.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Months Counted";
+      drawerSecondary.textContent = `${CURRENT_MONTH} months`;
+      resetDrawerContent();
+      renderKPI3Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI3Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
+
+    function openKpi4(){
+      currentLoan = null;
+      drawerTitle.textContent = "Total Fees to Date";
+      drawerSub.textContent = "Cumulative monthly fees across all loans.";
+      drawerPrimaryTitle.textContent = "Total Fees";
+      drawerPrimary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
+      drawerSecondaryTitle.textContent = "Total Loans";
+      drawerSecondary.textContent = `${loans.length}`;
+      resetDrawerContent();
+      renderKPI4Chart(loansWithEarnings, "drawerChartArea");
+      drawerExtra.innerHTML = `<div class="amort-wrap" id="drawerKpiTable"></div>`;
+      renderKPI4Table(loansWithEarnings, "drawerKpiTable");
+      openDrawerBase();
+    }
 
     // --------------------------
     // Loan tiles
@@ -851,7 +1033,8 @@
       if(drawer.classList.contains("open")){
         const inside = drawer.contains(e.target);
         const tileClicked = e.target.closest(".tile");
-        if(!inside && !tileClicked){
+        const kpiClicked = e.target.closest(".kpi");
+        if(!inside && !tileClicked && !kpiClicked){
           closeDrawer();
         }
       }
@@ -865,6 +1048,7 @@
 
     function openLoanDrawer(loan){
       currentLoan = loan;
+      resetDrawerContent();
       const lastIdx = loan.earningsSchedule.length - 1;
       const atCurrent = loan.earningsSchedule[Math.min(CURRENT_MONTH-1, lastIdx)] || loan.earningsSchedule[lastIdx];
       const atEnd = loan.earningsSchedule[lastIdx];
@@ -911,106 +1095,24 @@
           </table>
         </div>
       `;
-
-      drawer.classList.add("open");
-      drawer.setAttribute("aria-hidden","false");
-      drawer.scrollTop = 0;
+      openDrawerBase();
     }
 
     // --------------------------
     // KPI click wiring
-    // (for now they just open simple summary drawers; you can extend)
     // --------------------------
+    const kpiOpeners = {
+      netToDate:openKpi1,
+      projected:openKpi2,
+      avgMonthly:openKpi3,
+      fees:openKpi4
+    };
+
     document.querySelectorAll(".kpi").forEach(k => {
       k.addEventListener("click", () => {
         const key = k.getAttribute("data-kpi");
-        if(key === "netToDate"){
-          drawerTitle.textContent = "Total Net Earnings to Date";
-          drawerSub.textContent = "Portfolio-level earnings across all loans";
-          drawerPrimaryTitle.textContent = "Net Earnings to Date";
-          drawerPrimary.textContent = `$${kpis.totalNetToDate.toFixed(2)}`;
-          drawerSecondaryTitle.textContent = "Total Fees to Date";
-          drawerSecondary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
-          drawerChartArea.innerHTML = "";
-          drawerExtra.innerHTML = `
-            <p class="small" style="margin-top:8px;">
-              This KPI sums loan-level net earnings (principal + interest − fees) at month ${CURRENT_MONTH}.
-            </p>
-          `;
-          drawer.classList.add("open");
-          drawer.setAttribute("aria-hidden","false");
-        }
-        if(key === "projected"){
-          drawerTitle.textContent = "Projected Lifetime Earnings";
-          drawerSub.textContent = "Net earnings at maturity for all loans.";
-          drawerPrimaryTitle.textContent = "Projected Lifetime Net";
-          drawerPrimary.textContent = `$${kpis.totalNetProjected.toFixed(2)}`;
-          drawerSecondaryTitle.textContent = "Total Principal";
-          const totalPrin = loans.reduce((s,l)=>s+l.purchasePrice,0);
-          drawerSecondary.textContent = `$${totalPrin.toLocaleString()}`;
-          drawerChartArea.innerHTML = "";
-          drawerExtra.innerHTML = `
-            <p class="small" style="margin-top:8px;">
-              Projection uses the full amortization schedule for each loan and cumulative flat monthly fees.
-            </p>
-          `;
-          drawer.classList.add("open");
-          drawer.setAttribute("aria-hidden","false");
-        }
-        if(key === "avgMonthly"){
-          drawerTitle.textContent = "Average Monthly Earnings";
-          drawerSub.textContent = `Based on net earnings through month ${CURRENT_MONTH}.`;
-          drawerPrimaryTitle.textContent = "Avg Monthly Earnings";
-          drawerPrimary.textContent = `$${kpis.avgMonthlyEarnings.toFixed(2)}`;
-          drawerSecondaryTitle.textContent = "Months Counted";
-          drawerSecondary.textContent = `${CURRENT_MONTH} months`;
-          drawerChartArea.innerHTML = "";
-          drawerExtra.innerHTML = `
-            <p class="small" style="margin-top:8px;">
-              Calculated as total net earnings to date divided by the current month index.
-            </p>
-          `;
-          drawer.classList.add("open");
-          drawer.setAttribute("aria-hidden","false");
-        }
-        if(key === "fees"){
-          drawerTitle.textContent = "Total Fees to Date";
-          drawerSub.textContent = "Cumulative monthly fees across all loans.";
-          drawerPrimaryTitle.textContent = "Total Fees";
-          drawerPrimary.textContent = `$${kpis.totalFeesToDate.toFixed(2)}`;
-          drawerSecondaryTitle.textContent = "Total Loans";
-          drawerSecondary.textContent = `${loans.length}`;
-          drawerChartArea.innerHTML = "";
-          let rows = "";
-          loansWithEarnings.forEach(l=>{
-            const lastIdx = l.earningsSchedule.length-1;
-            const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
-            rows += `
-              <tr>
-                <td>Loan ${l.id}</td>
-                <td>${l.purchaseDate}</td>
-                <td>$${l.feePerMonth.toFixed(2)}/mo</td>
-                <td>$${atCur.cumFees.toFixed(2)}</td>
-              </tr>
-            `;
-          });
-          drawerExtra.innerHTML = `
-            <div class="amort-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Loan</th>
-                    <th>Purchase Date</th>
-                    <th>Fee / Month</th>
-                    <th>Fees to Date</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-            </div>
-          `;
-          drawer.classList.add("open");
-          drawer.setAttribute("aria-hidden","false");
+        if(kpiOpeners[key]){
+          kpiOpeners[key]();
         }
       });
     });
@@ -1042,6 +1144,252 @@
       const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
       setTheme(current === "dark" ? "light" : "dark");
     });
+
+    // ======================
+    // KPI CHART RENDERERS
+    // ======================
+    const loanColors = ["#0ea5e9", "#22c55e", "#7c3aed", "#14b8a6", "#f59e0b", "#ef4444", "#6366f1", "#a855f7", "#f97316", "#06b6d4"];
+
+    function buildKpiStackedChart(containerId, data, valueGetter, showCurrentLine = true){
+      const container = document.getElementById(containerId);
+      if(!container) return;
+      container.innerHTML = "";
+
+      const svgNS = "http://www.w3.org/2000/svg";
+      const rect = container.getBoundingClientRect();
+      const w = Math.max(360, rect.width || 700);
+      const h = 260;
+      const padL = 50, padR = 20, padT = 20, padB = 16;
+
+      const maxMonths = Math.max(CURRENT_MONTH, ...data.map(l => l.earningsSchedule.length));
+      const months = Array.from({length:maxMonths}, (_,i) => {
+        const month = i+1;
+        const contributions = data.map(loan => {
+          const row = loan.earningsSchedule[Math.min(i, loan.earningsSchedule.length-1)];
+          const value = valueGetter(row || {}, month, loan);
+          return {
+            loanId: loan.id,
+            value,
+            color: loanColors[(loan.id - 1) % loanColors.length]
+          };
+        });
+        const posTotal = contributions.reduce((sum,c) => c.value > 0 ? sum + c.value : sum, 0);
+        const negTotal = contributions.reduce((sum,c) => c.value < 0 ? sum + c.value : sum, 0);
+        return { month, contributions, posTotal, negTotal };
+      });
+
+      let maxValue = 0;
+      let minValue = 0;
+      months.forEach(m => {
+        maxValue = Math.max(maxValue, m.posTotal);
+        minValue = Math.min(minValue, m.negTotal);
+      });
+
+      const yMax = Math.max(maxValue, 1);
+      const yMin = minValue < -10 ? minValue : - (yMax * 0.10);
+      const yRange = yMax - yMin || 1;
+      const usableHeight = h - padT - padB;
+      const scale = usableHeight / yRange;
+      const yZero = padT + (yMax / yRange) * usableHeight;
+
+      const count = months.length;
+      const barW = (w - padL - padR) / Math.max(1, count);
+
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("width","100%");
+      svg.setAttribute("height","100%");
+
+      const gridBelowZero = 2;
+      const gridAboveZero = 4;
+
+      for (let gy = -gridBelowZero; gy <= gridAboveZero; gy++) {
+        const y = yZero - gy * ((yZero - padT) / gridAboveZero);
+
+        const gridLine = document.createElementNS(svgNS,"line");
+        gridLine.setAttribute("x1",padL);
+        gridLine.setAttribute("x2",w-padR);
+        gridLine.setAttribute("y1",y);
+        gridLine.setAttribute("y2",y);
+        gridLine.setAttribute("stroke", gy >= 0 ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.12)");
+        gridLine.setAttribute("stroke-width","0.7");
+        svg.appendChild(gridLine);
+
+        if(gy > 0){
+          const lbl = document.createElementNS(svgNS,"text");
+          const value = (yMax / gridAboveZero) * gy;
+          lbl.textContent = "$" + Math.round(value).toLocaleString();
+          lbl.setAttribute("x", padL - 10);
+          lbl.setAttribute("y", y + 4);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","end");
+          svg.appendChild(lbl);
+        }
+      }
+
+      const axis = document.createElementNS(svgNS,"line");
+      axis.setAttribute("x1",padL);
+      axis.setAttribute("x2",w-padR);
+      axis.setAttribute("y1",yZero);
+      axis.setAttribute("y2",yZero);
+      axis.setAttribute("stroke","#94a3b8");
+      axis.setAttribute("stroke-width","1");
+      svg.appendChild(axis);
+
+      months.forEach((m, idx) => {
+        const stackedGroupId = `stack-kpi-${m.month}`;
+        const x = padL + idx*barW;
+        let yPos = yZero;
+        let yNeg = yZero;
+        const barWidth = Math.max(2, barW-4);
+
+        m.contributions.forEach((c, loanIndex) => {
+          const hVal = Math.abs(c.value) * scale;
+          if(hVal <= 0) return;
+
+          const r = document.createElementNS(svgNS,"rect");
+          r.setAttribute("x", x+2);
+          r.setAttribute("width", barWidth);
+          r.setAttribute("fill", c.color);
+          prepareStackedBar(r, stackedGroupId, loanIndex, c.value >= 0);
+
+          if(c.value >= 0){
+            yPos -= hVal;
+            r.setAttribute("y", yPos);
+            r.setAttribute("height", hVal);
+          } else {
+            r.setAttribute("y", yNeg);
+            r.setAttribute("height", hVal);
+            yNeg += hVal;
+          }
+
+          svg.appendChild(r);
+        });
+
+        if((m.month % 12) === 0 || m.month === 1){
+          const lbl = document.createElementNS(svgNS,"text");
+          lbl.textContent = "M"+m.month;
+          lbl.setAttribute("x", x+barWidth/2);
+          lbl.setAttribute("y", h-padB+16);
+          lbl.setAttribute("font-size","11");
+          lbl.setAttribute("fill","var(--text)");
+          lbl.setAttribute("text-anchor","middle");
+          svg.appendChild(lbl);
+        }
+      });
+
+      if(showCurrentLine){
+        const currentX = padL + (CURRENT_MONTH - 1) * barW;
+        const vline = document.createElementNS(svgNS, "line");
+        vline.setAttribute("x1", currentX);
+        vline.setAttribute("x2", currentX);
+        vline.setAttribute("y1", 0);
+        vline.setAttribute("y2", h);
+        vline.setAttribute("stroke", "#64748b");
+        vline.setAttribute("stroke-dasharray", "4,3");
+        vline.setAttribute("stroke-width", "1.5");
+        svg.appendChild(vline);
+      }
+
+      container.appendChild(svg);
+    }
+
+
+    function renderKPI1Chart(data, containerId = "kpi1Chart"){
+      const limitedData = data.map(loan => ({
+        ...loan,
+        earningsSchedule: loan.earningsSchedule.slice(0, 18)
+      }));
+      buildKpiStackedChart(containerId, limitedData, row => row.netEarnings || 0, false);
+    }
+    function renderKPI2Chart(data, containerId = "kpi2Chart"){
+      buildKpiStackedChart(containerId, data, row => row.netEarnings || 0);
+    }
+    function renderKPI3Chart(data, containerId = "kpi3Chart"){
+      buildKpiStackedChart(containerId, data, (row, month) => {
+        const net = row.netEarnings || 0;
+        return month > 0 ? net / month : 0;
+      });
+    }
+    function renderKPI4Chart(data, containerId = "kpi4Chart"){
+      buildKpiStackedChart(containerId, data, row => -(row.cumFees || 0));
+    }
+
+    // ======================
+    // KPI TABLE RENDERERS
+    // ======================
+    function renderKpiTable(containerId, headers, rows){
+      const container = document.getElementById(containerId);
+      if(!container) return;
+      const headHtml = headers.map(h=>`<th>${h}</th>`).join("");
+      const bodyHtml = rows.map(r=>`<tr>${r.map(cell=>`<td>${cell}</td>`).join("")}</tr>`).join("");
+      container.innerHTML = `
+        <table>
+          <thead><tr>${headHtml}</tr></thead>
+          <tbody>${bodyHtml}</tbody>
+        </table>
+      `;
+    }
+
+    function renderKPI1Table(data, containerId = "kpi1Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        return [
+          `Loan ${l.id}`,
+          `$${atCur.netEarnings.toFixed(2)}`,
+          `$${atCur.cumPrincipal.toFixed(2)}`,
+          `$${atCur.cumInterest.toFixed(2)}`,
+          `-$${atCur.cumFees.toFixed(2)}`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Net Earnings","Principal","Interest","Fees"], rows);
+    }
+    function renderKPI2Table(data, containerId = "kpi2Table"){
+      const rows = data.map(l => {
+        const lastRow = l.earningsSchedule[l.earningsSchedule.length-1];
+        return [
+          `Loan ${l.id}`,
+          `$${lastRow.netEarnings.toFixed(2)}`,
+          `$${l.purchasePrice.toFixed(2)}`,
+          `${l.termYears} yrs`,
+          `${l.graceYears} yrs grace`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Projected Net","Principal","Term","Grace"], rows);
+    }
+    function renderKPI3Table(data, containerId = "kpi3Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        const avg = CURRENT_MONTH > 0 ? atCur.netEarnings / CURRENT_MONTH : 0;
+        return [
+          `Loan ${l.id}`,
+          `$${avg.toFixed(2)}`,
+          `$${atCur.netEarnings.toFixed(2)}`,
+          `${CURRENT_MONTH}`,
+          `$${l.feePerMonth.toFixed(2)}/mo`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Avg / Mo","Net to Date","Months","Fees"], rows);
+    }
+    function renderKPI4Table(data, containerId = "kpi4Table"){
+      const rows = data.map(l => {
+        const lastIdx = l.earningsSchedule.length-1;
+        const atCur = l.earningsSchedule[Math.min(CURRENT_MONTH-1,lastIdx)] || l.earningsSchedule[lastIdx];
+        return [
+          `Loan ${l.id}`,
+          l.purchaseDate,
+          `$${l.feePerMonth.toFixed(2)}/mo`,
+          `-$${atCur.cumFees.toFixed(2)}`,
+          `$${atCur.netEarnings.toFixed(2)}`
+        ];
+      });
+      renderKpiTable(containerId, ["Loan","Purchase","Fee / Mo","Fees to Date","Net to Date"], rows);
+    }
+
+    // Shared drawer behavior handled above for both KPI and loan content.
   </script>
 </body>
 </html>
