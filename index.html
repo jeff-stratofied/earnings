@@ -763,7 +763,7 @@
       containerEl.appendChild(svg);
 
       let lensInstance = null;
-      const lensRadius = 20;
+      const lensRadius = 30;
       const lensScale = 2;
 
       function handleMove(e){
@@ -961,7 +961,7 @@
 
       let lensInstance = null;
       let tooltipInstance = null;
-      const lensRadius = 40;
+      const lensRadius = 50;
       const lensScale = 1.5;
 
       function handleMove(e){
@@ -1445,7 +1445,7 @@
 
       let lensInstance = null;
       let tooltipInstance = null;
-      const lensRadius = 40;
+      const lensRadius = 50;
       const lensScale = 1.5;
 
       function handleMove(e){
@@ -1661,15 +1661,15 @@
 
     function updateLens(lens, x, y){
       if(!lens) return;
-      const tx = x - x * lens.scale;
-      const ty = y - y * lens.scale;
       lens.clipCircle.setAttribute("cx", x);
       lens.clipCircle.setAttribute("cy", y);
       lens.bgCircle.setAttribute("cx", x);
       lens.bgCircle.setAttribute("cy", y);
       lens.outline.setAttribute("cx", x);
       lens.outline.setAttribute("cy", y);
-      lens.content.setAttribute("transform", `translate(${tx}, ${ty}) scale(${lens.scale})`);
+      const translateX = x - (lens.radius / lens.scale);
+      const translateY = y - (lens.radius / lens.scale);
+      lens.content.setAttribute("transform", `scale(${lens.scale}) translate(${translateX}, ${translateY})`);
     }
 
     function removeLens(svg, lens){
