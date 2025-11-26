@@ -344,6 +344,7 @@
         <div class="muted-small" id="drawerSub">details</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="downloadCsvBtn">Download CSV</button>
         <button class="close-btn" id="closeBtn" aria-label="Close drawer">✕</button>
       </div>
     </div>
@@ -363,6 +364,10 @@
       <div class="drawer-chart" id="drawerChartArea"></div>
       <div id="drawerExtra"></div>
     </div>
+    <div class="actions" style="padding-top:10px">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
+    </div>
   </aside>
 
   <!-- KPI Drawers -->
@@ -373,6 +378,7 @@
         <div id="kpi1Sub" class="drawer-subtitle"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="downloadCsvBtn">Download CSV</button>
         <button class="close-btn kpi-close" data-kpi-close="kpiDrawer1" aria-label="Close KPI drawer">✕</button>
       </div>
     </div>
@@ -395,6 +401,10 @@
       <div class="spacer"></div>
       <button class="btn primary">Export</button>
     </div>
+    <div class="actions" style="padding-top:10px">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
+    </div>
   </aside>
 
   <aside id="kpiDrawer2" class="drawer kpi-drawer" aria-hidden="true">
@@ -404,6 +414,7 @@
         <div id="kpi2Sub" class="drawer-subtitle"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="downloadCsvBtn">Download CSV</button>
         <button class="close-btn kpi-close" data-kpi-close="kpiDrawer2" aria-label="Close KPI drawer">✕</button>
       </div>
     </div>
@@ -426,6 +437,10 @@
       <div class="spacer"></div>
       <button class="btn primary">Export</button>
     </div>
+    <div class="actions" style="padding-top:10px">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
+    </div>
   </aside>
 
   <aside id="kpiDrawer3" class="drawer kpi-drawer" aria-hidden="true">
@@ -435,6 +450,7 @@
         <div id="kpi3Sub" class="drawer-subtitle"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="downloadCsvBtn">Download CSV</button>
         <button class="close-btn kpi-close" data-kpi-close="kpiDrawer3" aria-label="Close KPI drawer">✕</button>
       </div>
     </div>
@@ -457,6 +473,10 @@
       <div class="spacer"></div>
       <button class="btn primary">Export</button>
     </div>
+    <div class="actions" style="padding-top:10px">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
+    </div>
   </aside>
 
   <aside id="kpiDrawer4" class="drawer kpi-drawer" aria-hidden="true">
@@ -466,6 +486,7 @@
         <div id="kpi4Sub" class="drawer-subtitle"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="downloadCsvBtn">Download CSV</button>
         <button class="close-btn kpi-close" data-kpi-close="kpiDrawer4" aria-label="Close KPI drawer">✕</button>
       </div>
     </div>
@@ -487,6 +508,10 @@
       <button class="btn" data-kpi-close="kpiDrawer4">Close</button>
       <div class="spacer"></div>
       <button class="btn primary">Export</button>
+    </div>
+    <div class="actions" style="padding-top:10px">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
     </div>
   </aside>
 
@@ -1794,6 +1819,39 @@
     }
 
     // Shared drawer behavior handled above for both KPI and loan content.
+
+    // CSV download handler
+    document.body.addEventListener("click", (e) => {
+      if (e.target.matches("#downloadCsvBtn") || e.target.matches("[data-download-csv]")) {
+        downloadCurrentDrawerCsv();
+      }
+    });
+
+    // Copy CSV
+    document.body.addEventListener("click", (e) => {
+      if (e.target.matches("#copyCsvBtn")) {
+        navigator.clipboard.writeText(currentCsvData || "");
+        alert("CSV copied to clipboard.");
+      }
+    });
+
+    // Print
+    document.body.addEventListener("click", (e) => {
+      if (e.target.matches("#printBtn")) {
+        window.print();
+      }
+    });
+
+    // CSV download utility
+    function downloadCurrentDrawerCsv() {
+      const blob = new Blob([currentCsvData || ""], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "drawer-data.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
