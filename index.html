@@ -180,21 +180,23 @@
 
     /* Drawer */
     .drawer{
-      position:fixed;
-      right:0;
-      top:0;
-      height:100vh;
-      max-width:1000px;
-      width:760px;
-      background:var(--card);
-      box-shadow:-28px 0 80px rgba(2,6,23,0.14);
-      transform:translateX(110%);
-      transition:transform .32s cubic-bezier(.2,.9,.3,1), opacity .24s ease;
-      z-index:120;
-      overflow:auto;
-      padding:20px;
-      opacity:0;
-    }
+  position:fixed;
+  right:0;
+  top:0;
+  height:100vh;
+  max-width:1000px;
+  width:760px;
+  background:var(--card);
+  box-shadow:-28px 0 80px rgba(2,6,23,0.14);
+  transform:translateX(110%);
+  transition:transform .32s cubic-bezier(.2,.9,.3,1), opacity .24s ease;
+  z-index:120;
+  overflow:auto;
+  padding:20px;
+  padding-bottom:100px;   /* NEW — keeps bottom buttons visible */
+  opacity:0;
+}
+
     .drawer.open{
       transform:translateX(0);
       opacity:1;
