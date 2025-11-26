@@ -1667,9 +1667,12 @@
       lens.bgCircle.setAttribute("cy", y);
       lens.outline.setAttribute("cx", x);
       lens.outline.setAttribute("cy", y);
-      const translateX = x - (lens.radius / lens.scale);
-      const translateY = y - (lens.radius / lens.scale);
-      lens.content.setAttribute("transform", `scale(${lens.scale}) translate(${translateX}, ${translateY})`);
+      const translateX = x / lens.scale - lens.radius;
+      const translateY = y / lens.scale - lens.radius;
+      lens.content.setAttribute(
+        "transform",
+        `scale(${lens.scale}) translate(${translateX}, ${translateY})`
+      );
     }
 
     function removeLens(svg, lens){
