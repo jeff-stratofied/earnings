@@ -179,11 +179,11 @@
     }
 
     /* Drawer */
-    .drawer{
+   .drawer{
   position:fixed;
   right:0;
   top:0;
-  height:100vh;
+  height: calc(100vh - 24px);     /* prevents the drawer from exceeding screen height */
   max-width:1000px;
   width:760px;
   background:var(--card);
@@ -193,7 +193,8 @@
   z-index:120;
   overflow:auto;
   padding:20px;
-  padding-bottom:100px;   /* NEW — keeps bottom buttons visible */
+  padding-bottom:120px;  /* ensures Print + Copy CSV row is always visible */
+  overscroll-behavior: contain; /* prevents window from scrolling under the drawer */
   opacity:0;
 }
 
