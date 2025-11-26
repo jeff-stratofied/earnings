@@ -179,11 +179,12 @@
     }
 
     /* Drawer */
-   .drawer{
+  /* Drawer */
+.drawer{
   position:fixed;
   right:0;
   top:0;
-  height: calc(100vh - 24px);     /* prevents the drawer from exceeding screen height */
+  height:100vh;                          /* full viewport height */
   max-width:1000px;
   width:760px;
   background:var(--card);
@@ -191,12 +192,13 @@
   transform:translateX(110%);
   transition:transform .32s cubic-bezier(.2,.9,.3,1), opacity .24s ease;
   z-index:120;
-  overflow:auto;
+  display:flex;                          /* NEW: flex column layout */
+  flex-direction:column;
   padding:20px;
-  padding-bottom:120px;  /* ensures Print + Copy CSV row is always visible */
-  overscroll-behavior: contain; /* prevents window from scrolling under the drawer */
+  overflow:hidden;                       /* scrolling will be on inner content */
   opacity:0;
 }
+
 
     .drawer.open{
       transform:translateX(0);
@@ -252,6 +254,14 @@
     .muted-small{ font-size:12px; color:var(--muted); margin-bottom:6px; }
     .main-val{ font-weight:800; font-size:18px; }
     .drawer-body{ display:flex; flex-direction:column; gap:12px; }
+    #drawerBody,
+.drawer-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin-top: 8px;
+  padding-bottom: 80px;
+}
+
     .drawer-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
     .drawer-actions .spacer{ flex:1; }
 
