@@ -1485,29 +1485,29 @@
         let tooltipLines = [];
         if(key === "kpi1"){ // Net earnings to date
           tooltipLines = [
-            `Month M\${month}`,
-            `Net: $\${aggregates.net.toFixed(2)}`,
-            `Principal: $\${aggregates.principal.toFixed(2)}`,
-            `Interest: $\${aggregates.interest.toFixed(2)}`,
-            `Fees: -$\${aggregates.fees.toFixed(2)}`
+            `Month M${month}`,
+  `Net: $${aggregates.net.toFixed(2)}`,
+  `Principal: $${aggregates.principal.toFixed(2)}`,
+  `Interest: $${aggregates.interest.toFixed(2)}`,
+  `Fees: -$${aggregates.fees.toFixed(2)}`
           ];
         } else if(key === "kpi2"){ // Projected lifetime
           tooltipLines = [
-            `Month M\${month}`,
-            `Projected Net: $\${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
+            `Month M${month}`,
+  `Projected Net: $${(monthRow.posTotal + monthRow.negTotal).toFixed(2)}`
           ];
         } else if(key === "kpi3"){ // Average monthly
           const avg = month > 0 ? aggregates.net / month : 0;
           tooltipLines = [
-            `Month M\${month}`,
-            `Avg / Month: $\${avg.toFixed(2)}`,
-            `Net to Date: $\${aggregates.net.toFixed(2)}`
+             `Month M${month}`,
+  `Avg / Month: $${avg.toFixed(2)}`,
+  `Net to Date: $${aggregates.net.toFixed(2)}`
           ];
         } else if(key === "kpi4"){ // Fees
           tooltipLines = [
-            `Month M\${month}`,
-            `Fees: -$\${aggregates.fees.toFixed(2)}`,
-            `Net: $\${aggregates.net.toFixed(2)}`
+            `Month M${month}`,
+  `Fees: -$${aggregates.fees.toFixed(2)}`,
+  `Net: $${aggregates.net.toFixed(2)}`
           ];
         }
 
