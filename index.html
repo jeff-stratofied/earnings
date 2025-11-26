@@ -179,12 +179,11 @@
     }
 
     /* Drawer */
-  /* Drawer */
 .drawer{
   position:fixed;
   right:0;
   top:0;
-  height:100vh;                          /* full viewport height */
+  height:100vh;               /* exact viewport height */
   max-width:1000px;
   width:760px;
   background:var(--card);
@@ -192,12 +191,32 @@
   transform:translateX(110%);
   transition:transform .32s cubic-bezier(.2,.9,.3,1), opacity .24s ease;
   z-index:120;
-  display:flex;                          /* NEW: flex column layout */
-  flex-direction:column;
-  padding:20px;
-  overflow:hidden;                       /* scrolling will be on inner content */
+
+  /* THE IMPORTANT FIXES */
+  display:flex;               /* define vertical layout */
+  flex-direction:column;      /* header → content → footer */
+  padding:0;                  /* remove padding from the container */
+
+  overflow:hidden;            /* scrolling happens inside content area */
   opacity:0;
 }
+.drawer-head{
+  padding:20px;
+  flex-shrink:0;      /* stays fixed at top */
+}
+
+#drawerBody,
+.drawer-body{
+  flex:1 1 auto;      /* fill remaining space */
+  overflow-y:auto;    /* THIS area scrolls */
+  padding:20px;
+}
+
+.drawer-footer{
+  padding:20px;
+  flex-shrink:0;      /* stays at bottom */
+}
+
 
 
     .drawer.open{
